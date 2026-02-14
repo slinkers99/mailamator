@@ -538,6 +538,15 @@ article {
   font-size: 0.85rem;
 }
 
+/* --- Field hints --- */
+.field-hint {
+  font-size: 0.82rem;
+  color: var(--pico-muted-color);
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
 /* --- Search bar --- */
 .search-bar {
   margin-bottom: 1.5rem;

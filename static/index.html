@@ -69,6 +69,9 @@
                         Cloudflare API Token <small>(optional)</small>
                         <input type="password" name="cloudflare_token" placeholder="Cloudflare token">
                     </label>
+                    <div class="field-hint">
+                        To push DNS records automatically, your domain must use Cloudflare's nameservers. Add your domain to Cloudflare and update your registrar's nameservers <em>before</em> using the "Push to Cloudflare" feature. The token needs <strong>Zone:DNS:Edit</strong> permission.
+                    </div>
                     <button type="submit">Add Account</button>
                 </form>
                 <div id="settings-add-status"></div>

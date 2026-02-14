@@ -515,6 +515,10 @@
       cfLabel.appendChild(cfInput);
       form.appendChild(cfLabel);
 
+      var hint = createEl("div", { className: "field-hint" });
+      hint.textContent = "Your domain must use Cloudflare\u2019s nameservers for DNS push to work. Add your domain to Cloudflare and update your registrar\u2019s nameservers first.";
+      form.appendChild(hint);
+
       var editActions = createEl("div", { className: "edit-actions" });
 
       var saveBtn = document.createElement("button");
