@@ -91,15 +91,17 @@ def push_to_cloudflare():
     data = request.get_json()
     account_id = data.get("account_id")
     domain_name = data.get("domain_name")
-    ownership_code = data.get("ownership_code")
 
-    if not account_id or not domain_name or not ownership_code:
-        return jsonify({"error": "account_id, domain_name, and ownership_code are required"}), 400
+    if not account_id or not domain_name:
+        return jsonify({"error": "account_id and domain_name are required"}), 400
 
     db = get_db()
     row = db.execute("SELECT cloudflare_token FROM accounts WHERE id = ?", (account_id,)).fetchone()
     if not row or not row["cloudflare_token"]:
         return jsonify({"error": "No Cloudflare token configured for this account"}), 400
+
+    client = _get_pm_client(account_id)
+    ownership_code = client.get_ownership_code()
 
     cf_token = decrypt(row["cloudflare_token"], current_app.config["SECRET_KEY"])
     cf = CloudflareClient(cf_token)
