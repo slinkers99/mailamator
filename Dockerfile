@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN chown -R mailamator:mailamator /app
+RUN mkdir -p /data && chown -R mailamator:mailamator /app /data
 USER mailamator
 
 EXPOSE 8080
