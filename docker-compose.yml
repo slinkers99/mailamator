@@ -1,0 +1,13 @@
+services:
+  mailamator:
+    build: .
+    ports:
+      - "${MAILAMATOR_PORT:-8080}:8080"
+    volumes:
+      - mailamator-data:/data
+    environment:
+      - MAILAMATOR_SECRET=${MAILAMATOR_SECRET:-change-me-in-production}
+      - MAILAMATOR_DB=/data/mailamator.db
+
+volumes:
+  mailamator-data:
