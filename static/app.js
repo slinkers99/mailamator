@@ -40,6 +40,9 @@
       if (cloudflareToken) body.cloudflare_token = cloudflareToken;
       return this.request("POST", "/api/accounts", body);
     },
+    updateAccount(id, data) {
+      return this.request("PATCH", "/api/accounts/" + id, data);
+    },
     deleteAccount(id) {
       return this.request("DELETE", "/api/accounts/" + id);
     },
@@ -402,6 +405,8 @@
       }
 
       state.accounts.forEach(function (a) {
+        var wrapper = document.createElement("div");
+
         var item = createEl("div", { className: "account-item", "data-id": String(a.id) });
 
         var info = createEl("div", { className: "account-info" });
@@ -415,6 +420,27 @@
         info.appendChild(badge);
         item.appendChild(info);
 
+        var actions = createEl("div", { className: "account-actions" });
+
+        // Edit button
+        var editBtn = createEl("button", {
+          type: "button",
+          className: "btn-edit",
+          ariaLabel: "Edit account " + a.name,
+        }, "Edit");
+
+        editBtn.addEventListener("click", function () {
+          // Close any open edit forms first
+          var existing = container.querySelector(".account-edit-form");
+          if (existing) existing.remove();
+
+          var form = self.buildEditForm(a, wrapper);
+          wrapper.appendChild(form);
+        });
+
+        actions.appendChild(editBtn);
+
+        // Delete button
         var delBtn = createEl("button", {
           type: "button",
           className: "btn-delete",
@@ -423,12 +449,7 @@
         }, "Delete");
 
         delBtn.addEventListener("click", async function () {
-          var account = getActiveAccount();
-          var acct = null;
-          for (var j = 0; j < state.accounts.length; j++) {
-            if (state.accounts[j].id === a.id) { acct = state.accounts[j]; break; }
-          }
-          if (!confirm('Delete account "' + (acct ? acct.name : a.id) + '"? This cannot be undone.')) {
+          if (!confirm('Delete account "' + a.name + '"? This cannot be undone.')) {
             return;
           }
           delBtn.setAttribute("aria-busy", "true");
@@ -446,9 +467,93 @@
           }
         });
 
-        item.appendChild(delBtn);
-        container.appendChild(item);
+        actions.appendChild(delBtn);
+        item.appendChild(actions);
+        wrapper.appendChild(item);
+        container.appendChild(wrapper);
       });
+    },
+
+    buildEditForm: function (account, wrapper) {
+      var self = this;
+      var form = createEl("div", { className: "account-edit-form" });
+
+      var nameLabel = document.createElement("label");
+      nameLabel.textContent = "Account Name";
+      var nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.value = account.name;
+      nameInput.placeholder = "Account name";
+      nameLabel.appendChild(nameInput);
+      form.appendChild(nameLabel);
+
+      var keyLabel = document.createElement("label");
+      keyLabel.textContent = "Purelymail API Key ";
+      var keySmall = document.createElement("small");
+      keySmall.textContent = "(leave blank to keep current)";
+      keyLabel.appendChild(keySmall);
+      var keyInput = document.createElement("input");
+      keyInput.type = "password";
+      keyInput.placeholder = "New API key";
+      keyLabel.appendChild(keyInput);
+      form.appendChild(keyLabel);
+
+      var cfLabel = document.createElement("label");
+      cfLabel.textContent = "Cloudflare Token ";
+      var cfSmall = document.createElement("small");
+      cfSmall.textContent = "(leave blank to keep current)";
+      cfLabel.appendChild(cfSmall);
+      var cfInput = document.createElement("input");
+      cfInput.type = "password";
+      cfInput.placeholder = "New Cloudflare token";
+      cfLabel.appendChild(cfInput);
+      form.appendChild(cfLabel);
+
+      var editActions = createEl("div", { className: "edit-actions" });
+
+      var saveBtn = document.createElement("button");
+      saveBtn.textContent = "Save";
+      saveBtn.addEventListener("click", async function () {
+        var data = {};
+        var newName = nameInput.value.trim();
+        var newKey = keyInput.value.trim();
+        var newCf = cfInput.value.trim();
+
+        if (newName && newName !== account.name) data.name = newName;
+        if (newKey) data.api_key = newKey;
+        if (newCf) data.cloudflare_token = newCf;
+
+        if (Object.keys(data).length === 0) {
+          form.remove();
+          return;
+        }
+
+        saveBtn.setAttribute("aria-busy", "true");
+        saveBtn.disabled = true;
+        try {
+          await api.updateAccount(account.id, data);
+          await loadAccounts();
+          self.renderList();
+          showToast("Account updated.");
+        } catch (err) {
+          showGlobalError(err.message);
+          saveBtn.removeAttribute("aria-busy");
+          saveBtn.disabled = false;
+        }
+      });
+
+      var cancelBtn = document.createElement("button");
+      cancelBtn.className = "secondary";
+      cancelBtn.textContent = "Cancel";
+      cancelBtn.addEventListener("click", function () {
+        form.remove();
+      });
+
+      editActions.appendChild(saveBtn);
+      editActions.appendChild(cancelBtn);
+      form.appendChild(editActions);
+
+      return form;
     },
   };
 
@@ -1016,6 +1121,38 @@
   };
 
   // ==========================================
+  // Theme Module
+  // ==========================================
+  var theme = {
+    init: function () {
+      var self = this;
+      this.updateIcon();
+      var btn = $("#theme-toggle");
+      if (btn) {
+        btn.addEventListener("click", function () {
+          self.toggle();
+        });
+      }
+    },
+
+    toggle: function () {
+      var current = document.documentElement.getAttribute("data-theme");
+      var next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("mailamator-theme", next);
+      this.updateIcon();
+    },
+
+    updateIcon: function () {
+      var btn = $("#theme-toggle");
+      if (!btn) return;
+      var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      btn.textContent = isDark ? "\u2600\uFE0F" : "\uD83C\uDF19";
+      btn.title = isDark ? "Switch to light mode" : "Switch to dark mode";
+    },
+  };
+
+  // ==========================================
   // Global Account Loading
   // ==========================================
   async function loadAccounts() {
@@ -1031,6 +1168,9 @@
   // Initialization
   // ==========================================
   async function init() {
+    // Initialize theme toggle
+    theme.init();
+
     // Dismiss global error on close click
     $(".alert-close").addEventListener("click", hideGlobalError);
 

@@ -37,6 +37,9 @@ def update_account(account_id):
     secret = current_app.config["SECRET_KEY"]
     db = get_db()
 
+    if "name" in data and data["name"]:
+        db.execute("UPDATE accounts SET name = ? WHERE id = ?", (data["name"], account_id))
+
     if "cloudflare_token" in data:
         encrypted = encrypt(data["cloudflare_token"], secret) if data["cloudflare_token"] else None
         db.execute("UPDATE accounts SET cloudflare_token = ? WHERE id = ?", (encrypted, account_id))

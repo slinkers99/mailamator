@@ -1,422 +1,624 @@
 /* ===========================
-   Mailamator Custom Styles
-   On top of Pico CSS v2
+   Mailamator – Polished UI
+   Custom styles on Pico CSS v2
    =========================== */
 
-/* --- Layout --- */
+/* --- Custom Properties --- */
+:root {
+  --header-bg: #ffffff;
+  --header-border: #e2e8f0;
+  --tab-pill-bg: #f1f5f9;
+  --tab-active-bg: var(--pico-primary);
+  --tab-active-text: #ffffff;
+  --tab-hover-bg: #e2e8f0;
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --toggle-bg: #f1f5f9;
+  --toggle-hover: #e2e8f0;
+  --badge-yes-bg: #dcfce7;
+  --badge-yes-text: #166534;
+  --badge-no-bg: #f1f5f9;
+  --badge-no-text: #6b7280;
+  --alert-error-bg: #fef2f2;
+  --alert-error-border: #fca5a5;
+  --alert-error-text: #991b1b;
+  --alert-success-bg: #f0fdf4;
+  --alert-success-border: #86efac;
+  --alert-success-text: #166534;
+  --alert-info-bg: #eff6ff;
+  --alert-info-border: #93c5fd;
+  --alert-info-text: #1e40af;
+  --status-valid: #22c55e;
+  --status-invalid: #ef4444;
+  --chip-bg: #e2e8f0;
+  --edit-form-bg: #f8fafc;
+  --edit-form-border: #e2e8f0;
+}
+
+[data-theme="dark"] {
+  --header-bg: var(--pico-card-background-color);
+  --header-border: var(--pico-muted-border-color);
+  --tab-pill-bg: hsl(217, 33%, 17%);
+  --tab-hover-bg: hsl(215, 25%, 27%);
+  --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --card-shadow-hover: 0 4px 8px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.2);
+  --toggle-bg: hsl(215, 25%, 27%);
+  --toggle-hover: hsl(215, 20%, 35%);
+  --badge-yes-bg: #052e16;
+  --badge-yes-text: #4ade80;
+  --badge-no-bg: hsl(215, 25%, 27%);
+  --badge-no-text: #94a3b8;
+  --alert-error-bg: hsl(0, 60%, 12%);
+  --alert-error-border: #991b1b;
+  --alert-error-text: #fca5a5;
+  --alert-success-bg: hsl(140, 50%, 10%);
+  --alert-success-border: #166534;
+  --alert-success-text: #86efac;
+  --alert-info-bg: hsl(224, 50%, 14%);
+  --alert-info-border: #1e40af;
+  --alert-info-text: #93c5fd;
+  --status-valid: #4ade80;
+  --status-invalid: #f87171;
+  --chip-bg: hsl(215, 25%, 27%);
+  --edit-form-bg: hsl(217, 33%, 14%);
+  --edit-form-border: hsl(215, 25%, 27%);
+}
+
+/* --- Smooth theme transitions --- */
+html {
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* --- Header --- */
+header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-border);
+  box-shadow: var(--card-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
 header nav {
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
 }
 
 .app-title {
-    font-size: 1.25rem;
-    white-space: nowrap;
+  font-size: 1.3rem;
+  white-space: nowrap;
+  letter-spacing: -0.02em;
 }
 
 #account-switcher {
-    margin-bottom: 0;
-    min-width: 180px;
+  margin-bottom: 0;
+  min-width: 180px;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* --- Theme Toggle Button --- */
+#theme-toggle {
+  background: var(--toggle-bg);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  color: var(--pico-color);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+#theme-toggle:hover {
+  background: var(--toggle-hover);
+  transform: scale(1.08);
+}
+
+#theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* --- Main Container --- */
 main.container {
-    padding-top: 1rem;
-    padding-bottom: 3rem;
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
 }
 
-/* --- Tab Navigation --- */
+/* --- Tab Navigation (pill style) --- */
 .tab-nav {
-    display: flex;
-    gap: 0;
-    border-bottom: 2px solid var(--pico-muted-border-color);
-    margin-bottom: 1.5rem;
-    padding: 0;
+  display: flex;
+  gap: 0.3rem;
+  border-bottom: none;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem;
+  background: var(--tab-pill-bg);
+  border-radius: 10px;
 }
 
 .tab-btn {
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    padding: 0.75rem 1.25rem;
-    margin-bottom: -2px;
-    cursor: pointer;
-    font-weight: 500;
-    color: var(--pico-muted-color);
-    border-radius: 0;
-    transition: color 0.15s, border-color 0.15s;
-    font-size: 0.95rem;
+  background: none;
+  border: none;
+  border-bottom: none;
+  padding: 0.5rem 1.1rem;
+  margin-bottom: 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--pico-muted-color);
+  border-radius: 8px;
+  transition: color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  font-size: 0.88rem;
 }
 
 .tab-btn:hover {
-    color: var(--pico-primary);
-    background: none;
+  color: var(--pico-color);
+  background: var(--tab-hover-bg);
 }
 
 .tab-btn[aria-selected="true"] {
-    color: var(--pico-primary);
-    border-bottom-color: var(--pico-primary);
+  color: var(--tab-active-text);
+  background: var(--tab-active-bg);
+  border-bottom-color: transparent;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3);
 }
 
 .tab-btn:focus-visible {
-    outline: 2px solid var(--pico-primary-focus);
-    outline-offset: -2px;
+  outline: 2px solid var(--pico-primary-focus);
+  outline-offset: 1px;
+}
+
+/* --- Cards (Pico <article>) --- */
+article {
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.2s ease;
 }
 
 /* --- Alerts --- */
 .alert {
-    padding: 0.75rem 1rem;
-    border-radius: var(--pico-border-radius);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
 }
 
 .alert-error {
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-    color: #991b1b;
+  background: var(--alert-error-bg);
+  border: 1px solid var(--alert-error-border);
+  color: var(--alert-error-text);
 }
 
 .alert-success {
-    background: #f0fdf4;
-    border: 1px solid #86efac;
-    color: #166534;
+  background: var(--alert-success-bg);
+  border: 1px solid var(--alert-success-border);
+  color: var(--alert-success-text);
 }
 
 .alert-info {
-    background: #eff6ff;
-    border: 1px solid #93c5fd;
-    color: #1e40af;
+  background: var(--alert-info-bg);
+  border: 1px solid var(--alert-info-border);
+  color: var(--alert-info-text);
 }
 
 .alert-close {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1.25rem;
-    line-height: 1;
-    padding: 0 0.25rem;
-    color: inherit;
-    opacity: 0.7;
-    margin: 0;
-    width: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0 0.25rem;
+  color: inherit;
+  opacity: 0.7;
+  margin: 0;
+  width: auto;
 }
 
 .alert-close:hover {
-    opacity: 1;
-    background: none;
+  opacity: 1;
+  background: none;
 }
 
 /* --- Loading states --- */
 .loading {
-    padding: 1rem 0;
-    text-align: center;
+  padding: 1rem 0;
+  text-align: center;
 }
 
 .loading [aria-busy="true"] {
-    font-size: 0.95rem;
-    color: var(--pico-muted-color);
+  font-size: 0.95rem;
+  color: var(--pico-muted-color);
 }
 
-/* --- Status dots (DNS validity) --- */
+/* --- Status dots (DNS) --- */
 .status-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 0.5rem;
-    vertical-align: middle;
-    flex-shrink: 0;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .status-dot.valid {
-    background-color: #22c55e;
+  background-color: var(--status-valid);
+  box-shadow: 0 0 4px var(--status-valid);
 }
 
 .status-dot.invalid {
-    background-color: #ef4444;
+  background-color: var(--status-invalid);
+  box-shadow: 0 0 4px var(--status-invalid);
 }
 
 /* --- Badges --- */
 .badge {
-    display: inline-block;
-    padding: 0.15rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .badge-yes {
-    background: #dcfce7;
-    color: #166534;
+  background: var(--badge-yes-bg);
+  color: var(--badge-yes-text);
 }
 
 .badge-no {
-    background: #f3f4f6;
-    color: #6b7280;
+  background: var(--badge-no-bg);
+  color: var(--badge-no-text);
 }
 
 /* --- Account list items --- */
 .account-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--pico-muted-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
 .account-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .account-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .account-name {
-    font-weight: 600;
+  font-weight: 600;
 }
 
-.account-item .btn-delete {
-    background: none;
-    border: 1px solid #fca5a5;
-    color: #dc2626;
-    padding: 0.35rem 0.75rem;
-    font-size: 0.8rem;
-    cursor: pointer;
-    border-radius: var(--pico-border-radius);
-    margin: 0;
-    width: auto;
+.account-actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
 }
 
-.account-item .btn-delete:hover {
-    background: #fef2f2;
+.account-actions button {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+  margin: 0;
+  width: auto;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.btn-edit {
+  background: none;
+  border: 1px solid var(--pico-primary);
+  color: var(--pico-primary);
+}
+
+.btn-edit:hover {
+  background: var(--pico-primary);
+  color: var(--tab-active-text);
+}
+
+.btn-delete {
+  background: none;
+  border: 1px solid var(--alert-error-border);
+  color: var(--status-invalid);
+}
+
+.btn-delete:hover {
+  background: var(--alert-error-bg);
+}
+
+/* --- Account Edit Form --- */
+.account-edit-form {
+  background: var(--edit-form-bg);
+  border: 1px solid var(--edit-form-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 0.5rem 0 0.75rem 0;
+  animation: slideDown 0.15s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.account-edit-form label {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.account-edit-form input {
+  font-size: 0.9rem;
+}
+
+.account-edit-form .edit-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.account-edit-form .edit-actions button {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  margin: 0;
+  width: auto;
 }
 
 /* --- Domain list items --- */
 .domain-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 0;
-    border-bottom: 1px solid var(--pico-muted-border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
 .domain-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .domain-info {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .domain-name {
-    font-family: var(--pico-font-family-monospace, monospace);
-    font-size: 0.9rem;
+  font-family: var(--pico-font-family-monospace, monospace);
+  font-size: 0.9rem;
 }
 
 .domain-actions {
-    display: flex;
-    gap: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .domain-actions button {
-    padding: 0.3rem 0.6rem;
-    font-size: 0.78rem;
-    margin: 0;
-    width: auto;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.78rem;
+  margin: 0;
+  width: auto;
 }
 
 /* --- Button group --- */
 .btn-group {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .btn-sm {
-    padding: 0.3rem 0.75rem !important;
-    font-size: 0.82rem !important;
-    margin: 0 !important;
-    width: auto !important;
+  padding: 0.3rem 0.75rem !important;
+  font-size: 0.82rem !important;
+  margin: 0 !important;
+  width: auto !important;
 }
 
 /* --- Header with action button --- */
 .header-with-action {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .header-with-action h3 {
-    margin: 0;
+  margin: 0;
 }
 
 /* --- Password reveal --- */
 .password-cell {
-    cursor: pointer;
-    user-select: none;
-    font-family: var(--pico-font-family-monospace, monospace);
-    font-size: 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--pico-font-family-monospace, monospace);
+  font-size: 0.85rem;
+  transition: color 0.15s ease;
 }
 
 .password-cell:hover {
-    color: var(--pico-primary);
+  color: var(--pico-primary);
 }
 
 .password-hidden {
-    letter-spacing: 0.1em;
+  letter-spacing: 0.1em;
 }
 
 /* --- Table wrapper for horizontal scroll --- */
 .table-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table-wrapper table {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 /* --- Empty states --- */
 .empty-state {
-    text-align: center;
-    padding: 2rem 1rem;
-    color: var(--pico-muted-color);
-    font-style: italic;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--pico-muted-color);
+  font-style: italic;
 }
 
 /* --- User list --- */
 .user-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    padding: 0.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
 }
 
 .user-chip {
-    display: inline-block;
-    padding: 0.25rem 0.6rem;
-    background: var(--pico-muted-border-color);
-    border-radius: var(--pico-border-radius);
-    font-family: var(--pico-font-family-monospace, monospace);
-    font-size: 0.82rem;
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: var(--chip-bg);
+  border-radius: 6px;
+  font-family: var(--pico-font-family-monospace, monospace);
+  font-size: 0.82rem;
 }
 
-/* --- Mail settings table --- */
+/* --- Mail settings grid --- */
 .mail-settings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-top: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
 }
 
 .mail-setting-card {
-    padding: 1rem;
-    border: 1px solid var(--pico-muted-border-color);
-    border-radius: var(--pico-border-radius);
+  padding: 1rem;
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: 8px;
+  background: var(--edit-form-bg);
 }
 
 .mail-setting-card h4 {
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--pico-muted-color);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pico-muted-color);
 }
 
 .mail-setting-card dl {
-    margin: 0;
+  margin: 0;
 }
 
 .mail-setting-card dt {
-    font-weight: 600;
-    font-size: 0.82rem;
-    margin-top: 0.4rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  margin-top: 0.4rem;
 }
 
 .mail-setting-card dd {
-    margin-left: 0;
-    font-family: var(--pico-font-family-monospace, monospace);
-    font-size: 0.85rem;
+  margin-left: 0;
+  font-family: var(--pico-font-family-monospace, monospace);
+  font-size: 0.85rem;
 }
 
 /* --- Search bar --- */
 .search-bar {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .search-bar input {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
 
 /* --- Copy success toast --- */
 .toast {
-    position: fixed;
-    bottom: 1.5rem;
-    right: 1.5rem;
-    background: #166534;
-    color: white;
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--pico-border-radius);
-    font-size: 0.9rem;
-    z-index: 1000;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.2s, transform 0.2s;
-    pointer-events: none;
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--alert-success-text);
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .toast.visible {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* --- Inline status messages --- */
 .status-msg {
-    margin-top: 0.5rem;
-    font-size: 0.9rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .status-msg.error {
-    color: #dc2626;
+  color: var(--status-invalid);
 }
 
 .status-msg.success {
-    color: #16a34a;
+  color: var(--status-valid);
+}
+
+/* --- Section headings --- */
+section > h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
 }
 
 /* --- Responsive adjustments --- */
 @media (max-width: 768px) {
-    .tab-btn {
-        padding: 0.6rem 0.75rem;
-        font-size: 0.85rem;
-    }
+  .tab-btn {
+    padding: 0.45rem 0.65rem;
+    font-size: 0.82rem;
+  }
 
-    .account-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .account-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
 
-    .domain-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.4rem;
-    }
+  .domain-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
 
-    .header-with-action {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
+  .header-with-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .header-controls {
+    gap: 0.35rem;
+  }
 }

@@ -37,6 +37,17 @@ def test_update_account_cloudflare_token(client):
     assert resp.status_code == 200
 
 
+def test_update_account_name(client):
+    resp = client.post("/api/accounts", json={"name": "old-name", "api_key": "pm_key"})
+    account_id = resp.get_json()["id"]
+    resp = client.patch(f"/api/accounts/{account_id}", json={"name": "new-name"})
+    assert resp.status_code == 200
+    resp = client.get("/api/accounts")
+    names = [a["name"] for a in resp.get_json()]
+    assert "new-name" in names
+    assert "old-name" not in names
+
+
 def test_create_account_missing_fields(client):
     resp = client.post("/api/accounts", json={"name": "no-key"})
     assert resp.status_code == 400
