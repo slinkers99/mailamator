@@ -3,6 +3,7 @@ from app.db import get_db
 from app.crypto import decrypt
 from app.purelymail import PurelymailClient
 from app.dns import DNS_RECORDS, build_zone_file
+from app.cloudflare import CloudflareClient
 
 bp = Blueprint("domains", __name__, url_prefix="/api/domains")
 
@@ -66,3 +67,25 @@ def check_dns():
     client = _get_pm_client(account_id)
     client.check_dns(domain_name)
     return jsonify({"ok": True, "message": "DNS recheck triggered"})
+
+
+@bp.route("/push-cloudflare", methods=["POST"])
+def push_to_cloudflare():
+    data = request.get_json()
+    account_id = data.get("account_id")
+    domain_name = data.get("domain_name")
+    ownership_code = data.get("ownership_code")
+
+    if not account_id or not domain_name or not ownership_code:
+        return jsonify({"error": "account_id, domain_name, and ownership_code are required"}), 400
+
+    db = get_db()
+    row = db.execute("SELECT cloudflare_token FROM accounts WHERE id = ?", (account_id,)).fetchone()
+    if not row or not row["cloudflare_token"]:
+        return jsonify({"error": "No Cloudflare token configured for this account"}), 400
+
+    cf_token = decrypt(row["cloudflare_token"], current_app.config["SECRET_KEY"])
+    cf = CloudflareClient(cf_token)
+    records = DNS_RECORDS(domain_name, ownership_code)
+    results = cf.push_records(domain_name, records)
+    return jsonify({"results": results})
