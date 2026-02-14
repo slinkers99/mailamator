@@ -64,10 +64,14 @@
 
 /* --- Compact Pico overrides --- */
 :root {
-  --pico-font-size: 93.75%;
   --pico-block-spacing-vertical: 0.6rem;
   --pico-block-spacing-horizontal: 0.85rem;
   --pico-spacing: 0.75rem;
+}
+
+/* Constrain layout width for large screens */
+.container {
+  max-width: 860px;
 }
 
 article {

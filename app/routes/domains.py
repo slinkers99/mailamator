@@ -37,33 +37,38 @@ def add_domain():
 
     client = _get_pm_client(account_id)
 
-    # Try to add the domain; if it already exists or DNS ownership hasn't
-    # been verified yet, continue so we can still return the DNS records.
-    warning = None
-    try:
-        client.add_domain(domain_name)
-    except PurelymailError as e:
-        warning = str(e)
-
+    # Get the ownership code first (account-level, always works).
+    # This lets us show DNS records even if the add fails.
     ownership_code = client.get_ownership_code()
     records = DNS_RECORDS(domain_name, ownership_code)
     zone_file = build_zone_file(domain_name, ownership_code)
 
-    # Record locally (ignore if already tracked)
-    db = get_db()
-    existing = db.execute(
-        "SELECT id FROM domains WHERE name = ? AND account_id = ?",
-        (domain_name, account_id),
-    ).fetchone()
-    if not existing:
-        db.execute(
-            "INSERT INTO domains (name, account_id) VALUES (?, ?)",
+    # Try to add the domain to Purelymail
+    added = False
+    warning = None
+    try:
+        client.add_domain(domain_name)
+        added = True
+    except PurelymailError as e:
+        warning = str(e)
+
+    # Only save locally if Purelymail actually accepted the domain
+    if added:
+        db = get_db()
+        existing = db.execute(
+            "SELECT id FROM domains WHERE name = ? AND account_id = ?",
             (domain_name, account_id),
-        )
-        db.commit()
+        ).fetchone()
+        if not existing:
+            db.execute(
+                "INSERT INTO domains (name, account_id) VALUES (?, ?)",
+                (domain_name, account_id),
+            )
+            db.commit()
 
     result = {
         "domain": domain_name,
+        "added": added,
         "ownership_code": ownership_code,
         "dns_records": records,
         "zone_file": zone_file,

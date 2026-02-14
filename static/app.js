@@ -594,10 +594,10 @@
           var result = await api.addDomain(state.activeAccountId, domainName);
           state.lastDomainResult = result;
           form.reset();
-          if (result.warning) {
-            setStatusMsg("#domain-add-status", "Domain registered on Purelymail, but DNS ownership is not yet verified. Add the DNS records below to your domain\u2019s DNS provider, then click \u201cCheck DNS\u201d to verify.", "info");
+          if (result.added) {
+            setStatusMsg("#domain-add-status", "Domain added to Purelymail. Set up the DNS records below, then click \u201cCheck DNS\u201d to verify.", "success");
           } else {
-            setStatusMsg("#domain-add-status", "Domain added successfully.", "success");
+            setStatusMsg("#domain-add-status", "Purelymail couldn\u2019t verify ownership yet. Add the DNS records below to your domain\u2019s DNS provider (make sure the domain is on Cloudflare or your nameserver first), then come back and try again.", "info");
           }
           self.renderResultCard(result);
           await self.fetchDomains();
