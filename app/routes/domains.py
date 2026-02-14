@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from app.db import get_db
 from app.crypto import decrypt
-from app.purelymail import PurelymailClient
+from app.purelymail import PurelymailClient, PurelymailError
 from app.dns import DNS_RECORDS, build_zone_file
 from app.cloudflare import CloudflareClient
 
@@ -36,17 +36,30 @@ def add_domain():
         return jsonify({"error": "account_id and domain_name are required"}), 400
 
     client = _get_pm_client(account_id)
-    client.add_domain(domain_name)
+
+    # Try to add the domain; if it already exists on Purelymail, continue
+    # so we can still return the DNS records the user needs.
+    try:
+        client.add_domain(domain_name)
+    except PurelymailError:
+        pass  # Domain may already exist — that's fine, proceed
+
     ownership_code = client.get_ownership_code()
     records = DNS_RECORDS(domain_name, ownership_code)
     zone_file = build_zone_file(domain_name, ownership_code)
 
+    # Record locally (ignore if already tracked)
     db = get_db()
-    db.execute(
-        "INSERT INTO domains (name, account_id) VALUES (?, ?)",
+    existing = db.execute(
+        "SELECT id FROM domains WHERE name = ? AND account_id = ?",
         (domain_name, account_id),
-    )
-    db.commit()
+    ).fetchone()
+    if not existing:
+        db.execute(
+            "INSERT INTO domains (name, account_id) VALUES (?, ?)",
+            (domain_name, account_id),
+        )
+        db.commit()
 
     return jsonify({
         "domain": domain_name,
