@@ -603,6 +603,14 @@ main.container {
   font-size: 0.8rem;
 }
 
+/* --- Domain step labels --- */
+.domain-step-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--pico-muted-color);
+  margin-bottom: 0.4rem;
+}
+
 /* --- Field hints --- */
 .field-hint {
   font-size: 0.78rem;

@@ -27,8 +27,9 @@ def list_domains():
     return jsonify(domains)
 
 
-@bp.route("", methods=["POST"])
-def add_domain():
+@bp.route("/prepare", methods=["POST"])
+def prepare_domain():
+    """Step 1: Get DNS records for a domain (before registering on Purelymail)."""
     data = request.get_json()
     account_id = data.get("account_id")
     domain_name = data.get("domain_name")
@@ -36,46 +37,44 @@ def add_domain():
         return jsonify({"error": "account_id and domain_name are required"}), 400
 
     client = _get_pm_client(account_id)
-
-    # Get the ownership code first (account-level, always works).
-    # This lets us show DNS records even if the add fails.
     ownership_code = client.get_ownership_code()
     records = DNS_RECORDS(domain_name, ownership_code)
     zone_file = build_zone_file(domain_name, ownership_code)
 
-    # Try to add the domain to Purelymail
-    added = False
-    warning = None
-    try:
-        client.add_domain(domain_name)
-        added = True
-    except PurelymailError as e:
-        warning = str(e)
-
-    # Only save locally if Purelymail actually accepted the domain
-    if added:
-        db = get_db()
-        existing = db.execute(
-            "SELECT id FROM domains WHERE name = ? AND account_id = ?",
-            (domain_name, account_id),
-        ).fetchone()
-        if not existing:
-            db.execute(
-                "INSERT INTO domains (name, account_id) VALUES (?, ?)",
-                (domain_name, account_id),
-            )
-            db.commit()
-
-    result = {
+    return jsonify({
         "domain": domain_name,
-        "added": added,
         "ownership_code": ownership_code,
         "dns_records": records,
         "zone_file": zone_file,
-    }
-    if warning:
-        result["warning"] = warning
-    return jsonify(result), 201
+    })
+
+
+@bp.route("/register", methods=["POST"])
+def register_domain():
+    """Step 3: Register domain on Purelymail (after DNS records are set up)."""
+    data = request.get_json()
+    account_id = data.get("account_id")
+    domain_name = data.get("domain_name")
+    if not account_id or not domain_name:
+        return jsonify({"error": "account_id and domain_name are required"}), 400
+
+    client = _get_pm_client(account_id)
+    client.add_domain(domain_name)
+
+    # Save locally
+    db = get_db()
+    existing = db.execute(
+        "SELECT id FROM domains WHERE name = ? AND account_id = ?",
+        (domain_name, account_id),
+    ).fetchone()
+    if not existing:
+        db.execute(
+            "INSERT INTO domains (name, account_id) VALUES (?, ?)",
+            (domain_name, account_id),
+        )
+        db.commit()
+
+    return jsonify({"ok": True, "domain": domain_name})
 
 
 @bp.route("/check-dns", methods=["POST"])

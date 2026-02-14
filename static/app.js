@@ -57,8 +57,14 @@
     listDomains(accountId) {
       return this.request("GET", "/api/domains?account_id=" + accountId);
     },
-    addDomain(accountId, domainName) {
-      return this.request("POST", "/api/domains", {
+    prepareDomain(accountId, domainName) {
+      return this.request("POST", "/api/domains/prepare", {
+        account_id: accountId,
+        domain_name: domainName,
+      });
+    },
+    registerDomain(accountId, domainName) {
+      return this.request("POST", "/api/domains/register", {
         account_id: accountId,
         domain_name: domainName,
       });
@@ -574,6 +580,8 @@
     init: function () {
       var self = this;
       var form = $("#form-add-domain");
+
+      // Step 1: Prepare — get DNS records for the domain
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
         if (!state.activeAccountId) {
@@ -591,17 +599,11 @@
         hide("#domain-result-card");
 
         try {
-          var result = await api.addDomain(state.activeAccountId, domainName);
+          var result = await api.prepareDomain(state.activeAccountId, domainName);
           state.lastDomainResult = result;
           form.reset();
-          if (result.added) {
-            setStatusMsg("#domain-add-status", "Domain added to Purelymail. Set up the DNS records below, then click \u201cCheck DNS\u201d to verify.", "success");
-          } else {
-            setStatusMsg("#domain-add-status", "Purelymail couldn\u2019t verify ownership yet. Add the DNS records below to your domain\u2019s DNS provider (make sure the domain is on Cloudflare or your nameserver first), then come back and try again.", "info");
-          }
+          setStatusMsg("#domain-add-status", "Set up the DNS records below, then click \u201cRegister on Purelymail\u201d.", "info");
           self.renderResultCard(result);
-          await self.fetchDomains();
-          self.renderList();
         } catch (err) {
           setStatusMsg("#domain-add-status", err.message, "error");
         } finally {
@@ -610,14 +612,14 @@
         }
       });
 
-      // Download zone file button
+      // Step 2a: Download zone file
       $("#btn-download-zone").addEventListener("click", function () {
         if (!state.lastDomainResult) return;
         var r = state.lastDomainResult;
         downloadTextFile(r.domain + "-dns.txt", r.zone_file);
       });
 
-      // Push to Cloudflare button
+      // Step 2b: Push to Cloudflare
       $("#btn-push-cloudflare").addEventListener("click", async function () {
         if (!state.lastDomainResult || !state.activeAccountId) return;
         var btn = $("#btn-push-cloudflare");
@@ -631,6 +633,28 @@
         } finally {
           btn.removeAttribute("aria-busy");
           btn.disabled = false;
+        }
+      });
+
+      // Step 3: Register on Purelymail (after DNS is set up)
+      $("#btn-register-purelymail").addEventListener("click", async function () {
+        if (!state.lastDomainResult || !state.activeAccountId) return;
+        var btn = $("#btn-register-purelymail");
+        btn.setAttribute("aria-busy", "true");
+        btn.disabled = true;
+        setStatusMsg("#domain-register-status", "");
+        try {
+          await api.registerDomain(state.activeAccountId, state.lastDomainResult.domain);
+          setStatusMsg("#domain-register-status", "Domain registered on Purelymail successfully!", "success");
+          btn.disabled = true;
+          btn.textContent = "Registered";
+          await self.fetchDomains();
+          self.renderList();
+        } catch (err) {
+          setStatusMsg("#domain-register-status", "Registration failed: " + err.message + ". Make sure DNS records are set up and have propagated, then try again.", "error");
+          btn.disabled = false;
+        } finally {
+          btn.removeAttribute("aria-busy");
         }
       });
     },

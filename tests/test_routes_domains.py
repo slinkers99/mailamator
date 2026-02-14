@@ -24,23 +24,41 @@ class TestListDomains:
         assert data[0]["name"] == "example.com"
 
 
-class TestAddDomain:
+class TestPrepareDomain:
     @patch("app.routes.domains._get_pm_client")
-    def test_add_domain(self, mock_get_client, client):
+    def test_prepare_returns_dns_records(self, mock_get_client, client):
         account_id = _seed_account(client)
         mock_client = MagicMock()
         mock_client.get_ownership_code.return_value = "own-abc123"
         mock_get_client.return_value = mock_client
 
-        resp = client.post("/api/domains", json={
+        resp = client.post("/api/domains/prepare", json={
             "account_id": account_id,
             "domain_name": "newdomain.com"
         })
-        assert resp.status_code == 201
+        assert resp.status_code == 200
         data = resp.get_json()
         assert data["domain"] == "newdomain.com"
         assert len(data["dns_records"]) == 7
         assert "zone_file" in data
+        # Should NOT call add_domain
+        mock_client.add_domain.assert_not_called()
+
+
+class TestRegisterDomain:
+    @patch("app.routes.domains._get_pm_client")
+    def test_register_calls_add_domain(self, mock_get_client, client):
+        account_id = _seed_account(client)
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+
+        resp = client.post("/api/domains/register", json={
+            "account_id": account_id,
+            "domain_name": "newdomain.com"
+        })
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["ok"] is True
         mock_client.add_domain.assert_called_once_with("newdomain.com")
 
 

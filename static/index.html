@@ -95,7 +95,7 @@
                 <form id="form-add-domain">
                     <fieldset role="group">
                         <input type="text" name="domain_name" placeholder="example.com" required>
-                        <button type="submit">Add Domain</button>
+                        <button type="submit">Get DNS Records</button>
                     </fieldset>
                 </form>
                 <div id="domain-add-status"></div>
@@ -117,9 +117,18 @@
                         <tbody id="domain-dns-records"></tbody>
                     </table>
                 </div>
-                <footer class="btn-group">
-                    <button type="button" id="btn-download-zone" class="secondary">Download Zone File</button>
-                    <button type="button" id="btn-push-cloudflare" class="contrast" hidden>Push to Cloudflare</button>
+                <footer>
+                    <p class="domain-step-label">Step 1: Add these DNS records to your domain's DNS provider</p>
+                    <div class="btn-group">
+                        <button type="button" id="btn-download-zone" class="secondary">Download Zone File</button>
+                        <button type="button" id="btn-push-cloudflare" class="contrast" hidden>Push to Cloudflare</button>
+                    </div>
+                    <hr>
+                    <p class="domain-step-label">Step 2: Once DNS records are in place, register the domain</p>
+                    <div class="btn-group">
+                        <button type="button" id="btn-register-purelymail">Register on Purelymail</button>
+                    </div>
+                    <div id="domain-register-status"></div>
                 </footer>
             </article>
 
