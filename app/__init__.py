@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 
 
 def create_app(test_config=None):
@@ -18,6 +18,11 @@ def create_app(test_config=None):
     app.register_blueprint(domains.bp)
     app.register_blueprint(users.bp)
     app.register_blueprint(history.bp)
+
+    @app.errorhandler(Exception)
+    def handle_error(e):
+        code = getattr(e, "code", 500)
+        return jsonify({"error": str(e)}), code
 
     @app.route("/")
     def index():

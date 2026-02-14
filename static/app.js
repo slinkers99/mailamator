@@ -535,7 +535,8 @@
     },
 
     fetchDomains: async function () {
-      state.domains = await api.listDomains(state.activeAccountId);
+      var result = await api.listDomains(state.activeAccountId);
+      state.domains = Array.isArray(result) ? result : [];
     },
 
     renderResultCard: function (result) {
@@ -721,7 +722,7 @@
       }
 
       // Make sure we have domains loaded
-      if (state.domains.length === 0) {
+      if (!Array.isArray(state.domains) || state.domains.length === 0) {
         try {
           await domains.fetchDomains();
         } catch (err) {
