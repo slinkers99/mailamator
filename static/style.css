@@ -585,6 +585,14 @@ article {
   color: var(--status-valid);
 }
 
+.status-msg.info {
+  color: var(--alert-info-text);
+  background: var(--alert-info-bg);
+  border: 1px solid var(--alert-info-border);
+  border-radius: 8px;
+  padding: 0.6rem 0.85rem;
+}
+
 /* --- Section headings --- */
 section > h2 {
   font-size: 1.4rem;

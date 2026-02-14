@@ -37,12 +37,13 @@ def add_domain():
 
     client = _get_pm_client(account_id)
 
-    # Try to add the domain; if it already exists on Purelymail, continue
-    # so we can still return the DNS records the user needs.
+    # Try to add the domain; if it already exists or DNS ownership hasn't
+    # been verified yet, continue so we can still return the DNS records.
+    warning = None
     try:
         client.add_domain(domain_name)
-    except PurelymailError:
-        pass  # Domain may already exist — that's fine, proceed
+    except PurelymailError as e:
+        warning = str(e)
 
     ownership_code = client.get_ownership_code()
     records = DNS_RECORDS(domain_name, ownership_code)
@@ -61,12 +62,15 @@ def add_domain():
         )
         db.commit()
 
-    return jsonify({
+    result = {
         "domain": domain_name,
         "ownership_code": ownership_code,
         "dns_records": records,
         "zone_file": zone_file,
-    }), 201
+    }
+    if warning:
+        result["warning"] = warning
+    return jsonify(result), 201
 
 
 @bp.route("/check-dns", methods=["POST"])
