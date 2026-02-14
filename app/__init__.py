@@ -22,6 +22,8 @@ def create_app(test_config=None):
     @app.errorhandler(Exception)
     def handle_error(e):
         code = getattr(e, "code", 500)
+        if not isinstance(code, int):
+            code = 500
         return jsonify({"error": str(e)}), code
 
     @app.route("/")

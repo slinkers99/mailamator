@@ -24,7 +24,13 @@
         opts.body = JSON.stringify(body);
       }
       const res = await fetch(url, opts);
-      const data = await res.json();
+      var text = await res.text();
+      var data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        throw new Error(text || "Request failed (" + res.status + ")");
+      }
       if (!res.ok) {
         throw new Error(data.error || "Request failed (" + res.status + ")");
       }
