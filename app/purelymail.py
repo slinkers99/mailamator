@@ -27,7 +27,11 @@ class PurelymailClient:
         return data
 
     def list_domains(self) -> list[dict]:
-        return self._post("listDomains")["result"]
+        result = self._post("listDomains")["result"]
+        # API returns {"domains": [...]} nested inside result
+        if isinstance(result, dict) and "domains" in result:
+            return result["domains"]
+        return result
 
     def add_domain(self, domain_name: str) -> None:
         self._post("addDomain", {"domainName": domain_name})
@@ -42,7 +46,11 @@ class PurelymailClient:
         self._post("updateDomainSettings", {"name": domain_name, "recheckDns": True})
 
     def list_users(self) -> list[str]:
-        return self._post("listUser")["result"]
+        result = self._post("listUser")["result"]
+        # API returns {"users": [...]} nested inside result
+        if isinstance(result, dict) and "users" in result:
+            return result["users"]
+        return result
 
     def create_user(self, user_name: str, domain_name: str, password: str) -> None:
         self._post("createUser", {

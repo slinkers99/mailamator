@@ -21,9 +21,9 @@ class TestListDomains:
     def test_returns_domains(self, mock_post, client):
         mock_post.return_value = _mock_response({
             "type": "success",
-            "result": [
-                {"name": "example.com", "dnsSummary": {"valid": True}}
-            ]
+            "result": {"domains": [
+                {"name": "example.com", "dnsSummary": {"passesMx": True, "passesSpf": True, "passesDkim": True, "passesDmarc": True}}
+            ]}
         })
         domains = client.list_domains()
         assert len(domains) == 1
@@ -31,7 +31,7 @@ class TestListDomains:
 
     @patch("app.purelymail.httpx.post")
     def test_sends_auth_header(self, mock_post, client):
-        mock_post.return_value = _mock_response({"type": "success", "result": []})
+        mock_post.return_value = _mock_response({"type": "success", "result": {"domains": []}})
         client.list_domains()
         call_kwargs = mock_post.call_args
         assert call_kwargs.kwargs["headers"]["Purelymail-Api-Token"] == "test-key"
