@@ -35,6 +35,7 @@
             <button role="tab" class="tab-btn" data-tab="settings" aria-selected="false" aria-controls="page-settings">Settings</button>
             <button role="tab" class="tab-btn" data-tab="domains" aria-selected="false" aria-controls="page-domains">Domains</button>
             <button role="tab" class="tab-btn" data-tab="users" aria-selected="false" aria-controls="page-users">Users</button>
+            <button role="tab" class="tab-btn" data-tab="routing" aria-selected="false" aria-controls="page-routing">Routing</button>
             <button role="tab" class="tab-btn" data-tab="history" aria-selected="false" aria-controls="page-history">History</button>
         </nav>
     </header>
@@ -205,6 +206,57 @@
                     <span aria-busy="true">Loading users...</span>
                 </div>
                 <div id="users-list"></div>
+            </article>
+        </section>
+
+        <!-- ========== ROUTING PAGE ========== -->
+        <section id="page-routing" role="tabpanel" aria-labelledby="tab-routing" hidden>
+            <h2>Routing</h2>
+
+            <article>
+                <header><h3>Add Routing Rule</h3></header>
+                <form id="form-add-routing">
+                    <div class="grid">
+                        <label>
+                            Domain
+                            <select id="routing-domain-picker" name="domain_name" required>
+                                <option value="">Select a domain</option>
+                            </select>
+                        </label>
+                        <label>
+                            Match Type
+                            <select id="routing-match-type" name="match_type">
+                                <option value="exact">Exact address</option>
+                                <option value="prefix">Prefix match</option>
+                                <option value="catchall">Catch-all</option>
+                            </select>
+                        </label>
+                    </div>
+                    <label id="routing-match-user-label">
+                        Match User <small>(local part, e.g. "info")</small>
+                        <input type="text" name="match_user" placeholder="info">
+                    </label>
+                    <label>
+                        Forward To <small>(one email per line)</small>
+                        <textarea name="target_addresses" rows="3" placeholder="bob@example.com&#10;carol@example.com" required></textarea>
+                    </label>
+                    <button type="submit">Create Rule</button>
+                </form>
+                <div id="routing-add-status"></div>
+            </article>
+
+            <article>
+                <header><h3>Existing Rules</h3></header>
+                <label>
+                    Filter by domain
+                    <select id="routing-list-domain-picker" aria-label="Filter rules by domain">
+                        <option value="">All domains</option>
+                    </select>
+                </label>
+                <div id="routing-loading" class="loading" hidden>
+                    <span aria-busy="true">Loading rules...</span>
+                </div>
+                <div id="routing-list"></div>
             </article>
         </section>
 

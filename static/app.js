@@ -99,6 +99,34 @@
       return this.request("GET", "/api/users/mail-settings");
     },
 
+    // Users - password reset
+    resetPassword(accountId, email) {
+      return this.request("POST", "/api/users/reset-password", {
+        account_id: accountId,
+        email: email,
+      });
+    },
+
+    // Routing
+    listRoutingRules(accountId, domain) {
+      var url = "/api/routing?account_id=" + accountId;
+      if (domain) url += "&domain=" + encodeURIComponent(domain);
+      return this.request("GET", url);
+    },
+    createRoutingRule(accountId, domainName, matchUser, targetAddresses, prefix, catchall) {
+      return this.request("POST", "/api/routing", {
+        account_id: accountId,
+        domain_name: domainName,
+        match_user: matchUser,
+        target_addresses: targetAddresses,
+        prefix: prefix,
+        catchall: catchall,
+      });
+    },
+    deleteRoutingRule(accountId, ruleId) {
+      return this.request("DELETE", "/api/routing/" + ruleId + "?account_id=" + accountId);
+    },
+
     // History
     getHistory(query) {
       var q = query ? "?q=" + encodeURIComponent(query) : "";
@@ -292,6 +320,14 @@
     return wrapper;
   }
 
+  function hidePassword(cell) {
+    cell.setAttribute("data-revealed", "false");
+    cell.classList.add("password-hidden");
+    cell.title = "Click to reveal";
+    clearChildren(cell);
+    cell.textContent = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
+  }
+
   function revealPassword(cell) {
     cell.setAttribute("data-revealed", "true");
     cell.classList.remove("password-hidden");
@@ -314,8 +350,21 @@
         function () { showToast("Password copied."); },
         function () { showGlobalError("Failed to copy."); }
       );
+      hidePassword(cell);
     });
     cell.appendChild(copyBtn);
+
+    // Close when clicking anywhere else
+    function onOutsideClick(e) {
+      if (!cell.contains(e.target)) {
+        hidePassword(cell);
+        document.removeEventListener("click", onOutsideClick, true);
+      }
+    }
+    // Delay listener so the current click doesn't immediately close it
+    setTimeout(function () {
+      document.addEventListener("click", onOutsideClick, true);
+    }, 0);
   }
 
   // ==========================================
@@ -351,6 +400,9 @@
           break;
         case "users":
           users.load();
+          break;
+        case "routing":
+          routing.load();
           break;
         case "history":
           historyModule.load();
@@ -821,6 +873,7 @@
       });
 
       users.updateDomainPickers();
+      routing.updateDomainPickers();
     },
   };
 
@@ -1011,7 +1064,7 @@
         var table = document.createElement("table");
         var thead = document.createElement("thead");
         var headerRow = document.createElement("tr");
-        ["Email", "Password", "Webmail", "Created"].forEach(function (h) {
+        ["Email", "Password", "Webmail", "Created", ""].forEach(function (h) {
           headerRow.appendChild(createTextEl("th", h));
         });
         thead.appendChild(headerRow);
@@ -1043,6 +1096,33 @@
           var tdDate = document.createElement("td");
           tdDate.textContent = u.created_at ? formatDate(u.created_at) : "\u2014";
           tr.appendChild(tdDate);
+
+          var tdActions = document.createElement("td");
+          var email = u.email || u;
+          var resetBtn = createEl("button", {
+            type: "button",
+            className: "btn-edit btn-sm",
+          }, "Reset PW");
+          resetBtn.addEventListener("click", async function () {
+            if (!confirm("Reset password for " + email + "?")) return;
+            resetBtn.setAttribute("aria-busy", "true");
+            resetBtn.disabled = true;
+            try {
+              var result = await api.resetPassword(state.activeAccountId, email);
+              // Update the password cell in this row
+              clearChildren(tdPassword);
+              tdPassword.appendChild(buildPasswordCell(result.password));
+              revealPassword(tdPassword.querySelector(".password-cell"));
+              showToast("Password reset for " + email);
+            } catch (err) {
+              showGlobalError(err.message);
+            } finally {
+              resetBtn.removeAttribute("aria-busy");
+              resetBtn.disabled = false;
+            }
+          });
+          tdActions.appendChild(resetBtn);
+          tr.appendChild(tdActions);
 
           tbody.appendChild(tr);
         });
@@ -1089,6 +1169,224 @@
     card.appendChild(dl);
     return card;
   }
+
+  // ==========================================
+  // Routing Module
+  // ==========================================
+  var routing = {
+    init: function () {
+      var self = this;
+      var form = $("#form-add-routing");
+      var matchTypeSelect = $("#routing-match-type");
+
+      // Toggle match_user field visibility based on match type
+      matchTypeSelect.addEventListener("change", function () {
+        var label = $("#routing-match-user-label");
+        if (matchTypeSelect.value === "catchall") {
+          label.hidden = true;
+        } else {
+          label.hidden = false;
+        }
+      });
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        if (!state.activeAccountId) {
+          setStatusMsg("#routing-add-status", "Select an account first.", "error");
+          return;
+        }
+
+        var domainName = form.domain_name.value;
+        var matchType = matchTypeSelect.value;
+        var matchUser = form.match_user.value.trim();
+        var targetsRaw = form.target_addresses.value.trim();
+
+        if (!domainName || !targetsRaw) {
+          setStatusMsg("#routing-add-status", "Select a domain and enter at least one target address.", "error");
+          return;
+        }
+
+        if (matchType !== "catchall" && !matchUser) {
+          setStatusMsg("#routing-add-status", "Enter a match user for exact/prefix rules.", "error");
+          return;
+        }
+
+        var targets = targetsRaw.split("\n").map(function (t) { return t.trim(); }).filter(function (t) { return t.length > 0; });
+
+        var btn = form.querySelector("button[type=submit]");
+        btn.setAttribute("aria-busy", "true");
+        btn.disabled = true;
+        setStatusMsg("#routing-add-status", "");
+
+        try {
+          await api.createRoutingRule(
+            state.activeAccountId,
+            domainName,
+            matchType === "catchall" ? "" : matchUser,
+            targets,
+            matchType === "prefix",
+            matchType === "catchall"
+          );
+          form.match_user.value = "";
+          form.target_addresses.value = "";
+          setStatusMsg("#routing-add-status", "Routing rule created.", "success");
+          self.loadRules();
+        } catch (err) {
+          setStatusMsg("#routing-add-status", err.message, "error");
+        } finally {
+          btn.removeAttribute("aria-busy");
+          btn.disabled = false;
+        }
+      });
+
+      $("#routing-list-domain-picker").addEventListener("change", function () {
+        self.loadRules();
+      });
+    },
+
+    load: async function () {
+      if (!state.activeAccountId) {
+        var rl = $("#routing-list");
+        clearChildren(rl);
+        rl.appendChild(createTextEl("div", "Select an account to view routing rules.", "empty-state"));
+        return;
+      }
+
+      if (!Array.isArray(state.domains) || state.domains.length === 0) {
+        try {
+          await domains.fetchDomains();
+        } catch (err) {
+          // ok
+        }
+      }
+
+      this.updateDomainPickers();
+      this.loadRules();
+    },
+
+    updateDomainPickers: function () {
+      var domainNames = state.domains.map(function (d) {
+        return typeof d === "string" ? d : d.name;
+      });
+
+      [$("#routing-domain-picker"), $("#routing-list-domain-picker")].forEach(function (sel, idx) {
+        if (!sel) return;
+        var current = sel.value;
+        clearChildren(sel);
+        sel.appendChild(createEl("option", { value: "" }, idx === 0 ? "Select a domain" : "All domains"));
+        domainNames.forEach(function (name) {
+          var opt = createEl("option", { value: name }, name);
+          if (name === current) opt.selected = true;
+          sel.appendChild(opt);
+        });
+      });
+    },
+
+    loadRules: async function () {
+      var domain = $("#routing-list-domain-picker").value;
+      var container = $("#routing-list");
+
+      if (!state.activeAccountId) {
+        clearChildren(container);
+        container.appendChild(createTextEl("div", "Select an account.", "empty-state"));
+        return;
+      }
+
+      show("#routing-loading");
+      try {
+        var rules = await api.listRoutingRules(state.activeAccountId, domain || null);
+        hide("#routing-loading");
+        this.renderRules(rules, container);
+      } catch (err) {
+        hide("#routing-loading");
+        clearChildren(container);
+        container.appendChild(createTextEl("div", err.message, "status-msg error"));
+      }
+    },
+
+    renderRules: function (rules, container) {
+      var self = this;
+      clearChildren(container);
+
+      if (!rules || rules.length === 0) {
+        container.appendChild(createTextEl("div", "No routing rules found.", "empty-state"));
+        return;
+      }
+
+      var wrapper = createEl("div", { className: "table-wrapper" });
+      var table = document.createElement("table");
+      var thead = document.createElement("thead");
+      var headerRow = document.createElement("tr");
+      ["Domain", "Match", "Type", "Forward To", ""].forEach(function (h) {
+        headerRow.appendChild(createTextEl("th", h));
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      var tbody = document.createElement("tbody");
+      rules.forEach(function (r) {
+        var tr = document.createElement("tr");
+
+        var tdDomain = document.createElement("td");
+        var codeDomain = document.createElement("code");
+        codeDomain.textContent = r.domainName;
+        tdDomain.appendChild(codeDomain);
+        tr.appendChild(tdDomain);
+
+        var tdMatch = document.createElement("td");
+        if (r.catchall) {
+          tdMatch.textContent = "*";
+        } else {
+          var codeMatch = document.createElement("code");
+          codeMatch.textContent = r.matchUser + (r.prefix ? "*" : "");
+          tdMatch.appendChild(codeMatch);
+        }
+        tr.appendChild(tdMatch);
+
+        var tdType = document.createElement("td");
+        var typeLabel = r.catchall ? "Catch-all" : (r.prefix ? "Prefix" : "Exact");
+        tdType.appendChild(createTextEl("span", typeLabel, "badge " + (r.catchall ? "badge-no" : "badge-yes")));
+        tr.appendChild(tdType);
+
+        var tdTargets = document.createElement("td");
+        r.targetAddresses.forEach(function (addr, i) {
+          if (i > 0) tdTargets.appendChild(document.createTextNode(", "));
+          var code = document.createElement("code");
+          code.textContent = addr;
+          tdTargets.appendChild(code);
+        });
+        tr.appendChild(tdTargets);
+
+        var tdActions = document.createElement("td");
+        var delBtn = createEl("button", {
+          type: "button",
+          className: "btn-delete btn-sm",
+        }, "Delete");
+        delBtn.addEventListener("click", async function () {
+          if (!confirm("Delete this routing rule?")) return;
+          delBtn.setAttribute("aria-busy", "true");
+          delBtn.disabled = true;
+          try {
+            await api.deleteRoutingRule(state.activeAccountId, r.id);
+            showToast("Rule deleted.");
+            self.loadRules();
+          } catch (err) {
+            showGlobalError(err.message);
+            delBtn.removeAttribute("aria-busy");
+            delBtn.disabled = false;
+          }
+        });
+        tdActions.appendChild(delBtn);
+        tr.appendChild(tdActions);
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      wrapper.appendChild(table);
+      container.appendChild(wrapper);
+    },
+  };
 
   // ==========================================
   // History Module
@@ -1254,6 +1552,7 @@
     settings.init();
     domains.init();
     users.init();
+    routing.init();
     historyModule.init();
 
     show("#settings-loading");

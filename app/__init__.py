@@ -13,10 +13,11 @@ def create_app(test_config=None):
     from app import db
     db.init_app(app)
 
-    from app.routes import accounts, domains, users, history
+    from app.routes import accounts, domains, users, routing, history
     app.register_blueprint(accounts.bp)
     app.register_blueprint(domains.bp)
     app.register_blueprint(users.bp)
+    app.register_blueprint(routing.bp)
     app.register_blueprint(history.bp)
 
     @app.errorhandler(Exception)

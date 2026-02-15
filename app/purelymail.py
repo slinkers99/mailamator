@@ -64,3 +64,29 @@ class PurelymailClient:
 
     def delete_user(self, user_name: str) -> None:
         self._post("deleteUser", {"userName": user_name})
+
+    def modify_user(self, user_name: str, **kwargs) -> None:
+        body = {"userName": user_name}
+        if "new_password" in kwargs:
+            body["newPassword"] = kwargs["new_password"]
+        self._post("modifyUser", body)
+
+    def list_routing_rules(self) -> list[dict]:
+        result = self._post("listRoutingRules")["result"]
+        if isinstance(result, dict) and "rules" in result:
+            return result["rules"]
+        return result
+
+    def create_routing_rule(self, domain_name: str, match_user: str,
+                            target_addresses: list[str], prefix: bool = False,
+                            catchall: bool = False) -> None:
+        self._post("createRoutingRule", {
+            "domainName": domain_name,
+            "matchUser": match_user,
+            "targetAddresses": target_addresses,
+            "prefix": prefix,
+            "catchall": catchall,
+        })
+
+    def delete_routing_rule(self, rule_id: int) -> None:
+        self._post("deleteRoutingRule", {"routingRuleId": rule_id})

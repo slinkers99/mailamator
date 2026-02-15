@@ -91,6 +91,54 @@ class TestListUsers:
         assert "password" not in bob
 
 
+class TestResetPassword:
+    @patch("app.routes.users._get_pm_client")
+    def test_reset_password(self, mock_get_client, client):
+        account_id = _seed_account(client)
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+
+        # Create user first so local DB has a record
+        client.post("/api/users", json={
+            "account_id": account_id,
+            "domain_name": "example.com",
+            "usernames": ["alice"],
+        })
+
+        resp = client.post("/api/users/reset-password", json={
+            "account_id": account_id,
+            "email": "alice@example.com",
+        })
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["email"] == "alice@example.com"
+        assert "password" in data
+        assert len(data["password"]) == 24
+        mock_client.modify_user.assert_called_once()
+
+    @patch("app.routes.users._get_pm_client")
+    def test_reset_password_no_local_record(self, mock_get_client, client):
+        """Password reset works even for users not in local DB."""
+        account_id = _seed_account(client)
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+
+        resp = client.post("/api/users/reset-password", json={
+            "account_id": account_id,
+            "email": "external@example.com",
+        })
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["email"] == "external@example.com"
+        assert "password" in data
+
+    def test_reset_password_missing_fields(self, client):
+        resp = client.post("/api/users/reset-password", json={
+            "account_id": 1,
+        })
+        assert resp.status_code == 400
+
+
 class TestMailSettings:
     def test_mail_settings(self, client):
         resp = client.get("/api/users/mail-settings")

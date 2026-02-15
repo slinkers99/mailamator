@@ -116,6 +116,31 @@ def list_users():
     return jsonify(all_users)
 
 
+@bp.route("/reset-password", methods=["POST"])
+def reset_password():
+    data = request.get_json()
+    account_id = data.get("account_id")
+    email = data.get("email")
+
+    if not account_id or not email:
+        return jsonify({"error": "account_id and email are required"}), 400
+
+    client = _get_pm_client(account_id)
+    new_password = generate_password()
+    client.modify_user(email, new_password=new_password)
+
+    # Update local DB if we have a record for this user
+    secret = current_app.config["SECRET_KEY"]
+    db = get_db()
+    db.execute(
+        "UPDATE users SET password = ? WHERE email = ? AND account_id = ?",
+        (encrypt(new_password, secret), email, account_id),
+    )
+    db.commit()
+
+    return jsonify({"email": email, "password": new_password})
+
+
 @bp.route("/mail-settings", methods=["GET"])
 def mail_settings():
     return jsonify(MAIL_SETTINGS)
