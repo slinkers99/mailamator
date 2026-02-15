@@ -31,6 +31,12 @@
                 </li>
             </ul>
         </nav>
+        <nav class="tab-nav container" role="tablist" aria-label="Main navigation">
+            <button role="tab" class="tab-btn" data-tab="settings" aria-selected="false" aria-controls="page-settings">Settings</button>
+            <button role="tab" class="tab-btn" data-tab="domains" aria-selected="false" aria-controls="page-domains">Domains</button>
+            <button role="tab" class="tab-btn" data-tab="users" aria-selected="false" aria-controls="page-users">Users</button>
+            <button role="tab" class="tab-btn" data-tab="history" aria-selected="false" aria-controls="page-history">History</button>
+        </nav>
     </header>
 
     <main class="container">
@@ -40,41 +46,35 @@
             <button type="button" class="alert-close" aria-label="Dismiss error">&times;</button>
         </div>
 
-        <!-- Tab navigation -->
-        <nav class="tab-nav" role="tablist" aria-label="Main navigation">
-            <button role="tab" class="tab-btn" data-tab="settings" aria-selected="false" aria-controls="page-settings">Settings</button>
-            <button role="tab" class="tab-btn" data-tab="domains" aria-selected="false" aria-controls="page-domains">Domains</button>
-            <button role="tab" class="tab-btn" data-tab="users" aria-selected="false" aria-controls="page-users">Users</button>
-            <button role="tab" class="tab-btn" data-tab="history" aria-selected="false" aria-controls="page-history">History</button>
-        </nav>
-
         <!-- ========== SETTINGS PAGE ========== -->
         <section id="page-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
             <h2>Settings</h2>
 
             <article>
-                <header><h3>Add Account</h3></header>
-                <form id="form-add-account">
-                    <div class="grid">
+                <details id="add-account-details" open>
+                    <summary><strong>Add New Account</strong></summary>
+                    <form id="form-add-account">
+                        <div class="grid">
+                            <label>
+                                Account Name
+                                <input type="text" name="name" placeholder="e.g. My Project" required>
+                            </label>
+                            <label>
+                                Purelymail API Key
+                                <input type="password" name="api_key" placeholder="API key" required>
+                            </label>
+                        </div>
                         <label>
-                            Account Name
-                            <input type="text" name="name" placeholder="e.g. My Project" required>
+                            Cloudflare API Token <small>(optional)</small>
+                            <input type="password" name="cloudflare_token" placeholder="Cloudflare token">
                         </label>
-                        <label>
-                            Purelymail API Key
-                            <input type="password" name="api_key" placeholder="API key" required>
-                        </label>
-                    </div>
-                    <label>
-                        Cloudflare API Token <small>(optional)</small>
-                        <input type="password" name="cloudflare_token" placeholder="Cloudflare token">
-                    </label>
-                    <div class="field-hint">
-                        To push DNS records automatically, your domain must use Cloudflare's nameservers. Add your domain to Cloudflare and update your registrar's nameservers <em>before</em> using the "Push to Cloudflare" feature. The token needs <strong>Zone:DNS:Edit</strong> permission.
-                    </div>
-                    <button type="submit">Add Account</button>
-                </form>
-                <div id="settings-add-status"></div>
+                        <div class="field-hint">
+                            To push DNS records automatically, your domain must use Cloudflare's nameservers. Add your domain to Cloudflare and update your registrar's nameservers <em>before</em> using the "Push to Cloudflare" feature. The token needs <strong>Zone:DNS:Edit</strong> permission.
+                        </div>
+                        <button type="submit">Add Account</button>
+                    </form>
+                    <div id="settings-add-status"></div>
+                </details>
             </article>
 
             <article>
@@ -134,6 +134,7 @@
 
             <article>
                 <header><h3>Domain List</h3></header>
+                <div class="field-hint">Use "Check DNS" to ask Purelymail to re-verify a domain's DNS records after making changes at your DNS provider.</div>
                 <div id="domains-loading" class="loading" hidden>
                     <span aria-busy="true">Loading domains...</span>
                 </div>
@@ -185,11 +186,12 @@
                 </div>
             </article>
 
-            <!-- Mail settings (collapsible) -->
-            <details id="mail-settings-details">
-                <summary>Mail Client Settings</summary>
-                <div id="mail-settings-content"></div>
-            </details>
+            <article>
+                <details id="mail-settings-details" open>
+                    <summary><strong>Mail Client Settings</strong></summary>
+                    <div id="mail-settings-content"></div>
+                </details>
+            </article>
 
             <article>
                 <header><h3>Existing Users</h3></header>

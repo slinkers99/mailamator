@@ -48,15 +48,24 @@ class TestListUsers:
     def test_list_users_for_domain(self, mock_get_client, client):
         account_id = _seed_account(client)
         mock_client = MagicMock()
-        mock_client.list_users.return_value = [
-            "alice@example.com", "bob@example.com", "other@different.com"
-        ]
         mock_get_client.return_value = mock_client
+
+        # Create users via the API (stored in local DB)
+        client.post("/api/users", json={
+            "account_id": account_id,
+            "domain_name": "example.com",
+            "usernames": ["alice", "bob"],
+        })
 
         resp = client.get(f"/api/users?account_id={account_id}&domain=example.com")
         assert resp.status_code == 200
         data = resp.get_json()
-        assert len(data) == 2  # filtered to example.com only
+        assert len(data) == 2
+        emails = [u["email"] for u in data]
+        assert "alice@example.com" in emails
+        assert "bob@example.com" in emails
+        assert "password" in data[0]
+        assert "created_at" in data[0]
 
 
 class TestMailSettings:

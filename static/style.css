@@ -69,7 +69,6 @@
   --pico-spacing: 0.75rem;
 }
 
-/* Constrain layout width for large screens */
 .container {
   max-width: 860px;
 }
@@ -81,9 +80,8 @@ article {
 }
 
 article > header {
-  padding: 0.5rem 0;
-  margin: -0.75rem -1rem 0.5rem -1rem;
   padding: 0.4rem 1rem;
+  margin: -0.75rem -1rem 0.5rem -1rem;
 }
 
 article > header h3,
@@ -143,7 +141,7 @@ header {
 }
 
 header nav {
-  padding: 0.3rem 0;
+  padding: 0.15rem 0;
 }
 
 header nav ul {
@@ -199,26 +197,32 @@ header nav ul {
 
 /* --- Main Container --- */
 main.container {
-  padding-top: 0.85rem;
+  padding-top: 1rem;
   padding-bottom: 2rem;
 }
 
-/* --- Tab Navigation (pill style) --- */
+/* --- Tab Navigation (pill style, inside header) --- */
 .tab-nav {
   display: flex;
   gap: 0.2rem;
   border-bottom: none;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
   padding: 0.2rem;
   background: var(--tab-pill-bg);
   border-radius: 8px;
+}
+
+header .tab-nav {
+  margin-top: 0;
+  margin-bottom: 0.2rem;
+  padding: 0.15rem;
 }
 
 .tab-btn {
   background: none;
   border: none;
   border-bottom: none;
-  padding: 0.35rem 0.9rem;
+  padding: 0.25rem 0.75rem;
   margin-bottom: 0;
   cursor: pointer;
   font-weight: 600;
@@ -449,6 +453,17 @@ main.container {
   width: auto;
 }
 
+/* --- Details/Summary inside article --- */
+article details summary {
+  padding: 0.3rem 0;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+article details summary strong {
+  font-size: 0.92rem;
+}
+
 /* --- Domain list items --- */
 .domain-item {
   display: flex;
@@ -513,19 +528,54 @@ main.container {
 
 /* --- Password reveal --- */
 .password-cell {
-  cursor: pointer;
-  user-select: none;
   font-family: var(--pico-font-family-monospace, monospace);
   font-size: 0.82rem;
   transition: color 0.15s ease;
 }
 
-.password-cell:hover {
+.password-cell[data-revealed="false"] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.password-cell[data-revealed="false"]:hover {
   color: var(--pico-primary);
+}
+
+.password-cell[data-revealed="true"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  user-select: text;
 }
 
 .password-hidden {
   letter-spacing: 0.1em;
+}
+
+.password-text {
+  user-select: text;
+}
+
+.btn-copy-pw {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.7rem;
+  background: var(--tab-pill-bg);
+  border: 1px solid var(--pico-muted-border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--pico-muted-color);
+  width: auto;
+  line-height: 1;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.btn-copy-pw:hover {
+  background: var(--tab-hover-bg);
+  color: var(--pico-color);
 }
 
 /* --- Table wrapper for horizontal scroll --- */
@@ -545,23 +595,6 @@ main.container {
   color: var(--pico-muted-color);
   font-style: italic;
   font-size: 0.88rem;
-}
-
-/* --- User list --- */
-.user-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-  padding: 0.35rem 0;
-}
-
-.user-chip {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  background: var(--chip-bg);
-  border-radius: 4px;
-  font-family: var(--pico-font-family-monospace, monospace);
-  font-size: 0.78rem;
 }
 
 /* --- Mail settings grid --- */

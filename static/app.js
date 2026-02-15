@@ -237,7 +237,7 @@
     URL.revokeObjectURL(url);
   }
 
-  // Safe DOM builders -- these create elements without innerHTML
+  // Safe DOM builders
   function createTextEl(tag, text, className) {
     var el = document.createElement(tag);
     if (text != null) el.textContent = text;
@@ -273,6 +273,49 @@
       });
     }
     return el;
+  }
+
+  // ==========================================
+  // Password Cell Helpers
+  // ==========================================
+
+  function buildPasswordCell(password) {
+    var wrapper = createEl("span", { className: "password-cell password-hidden" });
+    wrapper.setAttribute("data-password", password);
+    wrapper.setAttribute("data-revealed", "false");
+    wrapper.title = "Click to reveal";
+    wrapper.textContent = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
+    wrapper.addEventListener("click", function () {
+      if (wrapper.getAttribute("data-revealed") === "true") return;
+      revealPassword(wrapper);
+    });
+    return wrapper;
+  }
+
+  function revealPassword(cell) {
+    cell.setAttribute("data-revealed", "true");
+    cell.classList.remove("password-hidden");
+    cell.title = "";
+    clearChildren(cell);
+
+    var textSpan = document.createElement("span");
+    textSpan.className = "password-text";
+    textSpan.textContent = cell.getAttribute("data-password");
+    cell.appendChild(textSpan);
+
+    var copyBtn = document.createElement("button");
+    copyBtn.className = "btn-copy-pw";
+    copyBtn.title = "Copy password";
+    copyBtn.type = "button";
+    copyBtn.textContent = "Copy";
+    copyBtn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      navigator.clipboard.writeText(cell.getAttribute("data-password")).then(
+        function () { showToast("Password copied."); },
+        function () { showGlobalError("Failed to copy."); }
+      );
+    });
+    cell.appendChild(copyBtn);
   }
 
   // ==========================================
@@ -345,7 +388,6 @@
         sel.appendChild(opt);
       });
 
-      // If active account is no longer in the list, pick the first one
       var found = false;
       for (var i = 0; i < state.accounts.length; i++) {
         if (state.accounts[i].id === state.activeAccountId) { found = true; break; }
@@ -401,6 +443,11 @@
     },
 
     load: function () {
+      // Collapse "Add New Account" if accounts already exist
+      var details = document.getElementById("add-account-details");
+      if (details) {
+        details.open = state.accounts.length === 0;
+      }
       this.renderList();
     },
 
@@ -434,7 +481,6 @@
 
         var actions = createEl("div", { className: "account-actions" });
 
-        // Edit button
         var editBtn = createEl("button", {
           type: "button",
           className: "btn-edit",
@@ -442,17 +488,14 @@
         }, "Edit");
 
         editBtn.addEventListener("click", function () {
-          // Close any open edit forms first
           var existing = container.querySelector(".account-edit-form");
           if (existing) existing.remove();
-
           var form = self.buildEditForm(a, wrapper);
           wrapper.appendChild(form);
         });
 
         actions.appendChild(editBtn);
 
-        // Delete button
         var delBtn = createEl("button", {
           type: "button",
           className: "btn-delete",
@@ -581,7 +624,6 @@
       var self = this;
       var form = $("#form-add-domain");
 
-      // Step 1: Prepare — get DNS records for the domain
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
         if (!state.activeAccountId) {
@@ -612,14 +654,12 @@
         }
       });
 
-      // Step 2a: Download zone file
       $("#btn-download-zone").addEventListener("click", function () {
         if (!state.lastDomainResult) return;
         var r = state.lastDomainResult;
         downloadTextFile(r.domain + "-dns.txt", r.zone_file);
       });
 
-      // Step 2b: Push to Cloudflare
       $("#btn-push-cloudflare").addEventListener("click", async function () {
         if (!state.lastDomainResult || !state.activeAccountId) return;
         var btn = $("#btn-push-cloudflare");
@@ -636,7 +676,6 @@
         }
       });
 
-      // Step 3: Register on Purelymail (after DNS is set up)
       $("#btn-register-purelymail").addEventListener("click", async function () {
         if (!state.lastDomainResult || !state.activeAccountId) return;
         var btn = $("#btn-register-purelymail");
@@ -715,7 +754,6 @@
         tbody.appendChild(tr);
       });
 
-      // Show/hide Cloudflare button based on account config
       var account = getActiveAccount();
       if (account && account.has_cloudflare) {
         show("#btn-push-cloudflare");
@@ -782,7 +820,6 @@
         container.appendChild(item);
       });
 
-      // Also update the domain pickers on the Users page
       users.updateDomainPickers();
     },
   };
@@ -864,7 +901,6 @@
         return;
       }
 
-      // Make sure we have domains loaded
       if (!Array.isArray(state.domains) || state.domains.length === 0) {
         try {
           await domains.fetchDomains();
@@ -911,16 +947,7 @@
         tr.appendChild(tdEmail);
 
         var tdPassword = document.createElement("td");
-        var pwSpan = document.createElement("span");
-        pwSpan.className = "password-cell password-hidden";
-        pwSpan.setAttribute("data-password", u.password);
-        pwSpan.setAttribute("data-revealed", "false");
-        pwSpan.title = "Click to reveal";
-        pwSpan.textContent = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
-        pwSpan.addEventListener("click", function () {
-          togglePasswordReveal(pwSpan);
-        });
-        tdPassword.appendChild(pwSpan);
+        tdPassword.appendChild(buildPasswordCell(u.password));
         tr.appendChild(tdPassword);
 
         var tdWebmail = document.createElement("td");
@@ -980,11 +1007,44 @@
           return;
         }
 
-        var listDiv = createEl("div", { className: "user-list" });
-        userList.forEach(function (email) {
-          listDiv.appendChild(createTextEl("span", email, "user-chip"));
+        var wrapper = createEl("div", { className: "table-wrapper" });
+        var table = document.createElement("table");
+        var thead = document.createElement("thead");
+        var headerRow = document.createElement("tr");
+        ["Email", "Password", "Webmail", "Created"].forEach(function (h) {
+          headerRow.appendChild(createTextEl("th", h));
         });
-        container.appendChild(listDiv);
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        var tbody = document.createElement("tbody");
+        userList.forEach(function (u) {
+          var tr = document.createElement("tr");
+
+          var tdEmail = document.createElement("td");
+          var codeEmail = document.createElement("code");
+          codeEmail.textContent = u.email;
+          tdEmail.appendChild(codeEmail);
+          tr.appendChild(tdEmail);
+
+          var tdPassword = document.createElement("td");
+          tdPassword.appendChild(buildPasswordCell(u.password));
+          tr.appendChild(tdPassword);
+
+          var tdWebmail = document.createElement("td");
+          var link = createEl("a", { href: "https://purelymail.com/webmail", target: "_blank", rel: "noopener" }, "Open");
+          tdWebmail.appendChild(link);
+          tr.appendChild(tdWebmail);
+
+          var tdDate = document.createElement("td");
+          tdDate.textContent = formatDate(u.created_at);
+          tr.appendChild(tdDate);
+
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        wrapper.appendChild(table);
+        container.appendChild(wrapper);
       } catch (err) {
         hide("#users-loading");
         clearChildren(container);
@@ -1024,22 +1084,6 @@
 
     card.appendChild(dl);
     return card;
-  }
-
-  // Helper: toggle password visibility
-  function togglePasswordReveal(cell) {
-    var revealed = cell.getAttribute("data-revealed") === "true";
-    if (revealed) {
-      cell.textContent = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
-      cell.setAttribute("data-revealed", "false");
-      cell.classList.add("password-hidden");
-      cell.title = "Click to reveal";
-    } else {
-      cell.textContent = cell.getAttribute("data-password");
-      cell.setAttribute("data-revealed", "true");
-      cell.classList.remove("password-hidden");
-      cell.title = "Click to hide";
-    }
   }
 
   // ==========================================
@@ -1096,16 +1140,7 @@
         tr.appendChild(tdEmail);
 
         var tdPassword = document.createElement("td");
-        var pwSpan = document.createElement("span");
-        pwSpan.className = "password-cell password-hidden";
-        pwSpan.setAttribute("data-password", u.password);
-        pwSpan.setAttribute("data-revealed", "false");
-        pwSpan.title = "Click to reveal";
-        pwSpan.textContent = "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
-        pwSpan.addEventListener("click", function () {
-          togglePasswordReveal(pwSpan);
-        });
-        tdPassword.appendChild(pwSpan);
+        tdPassword.appendChild(buildPasswordCell(u.password));
         tr.appendChild(tdPassword);
 
         var tdDomain = document.createElement("td");
@@ -1206,13 +1241,10 @@
   // Initialization
   // ==========================================
   async function init() {
-    // Initialize theme toggle
     theme.init();
 
-    // Dismiss global error on close click
     $(".alert-close").addEventListener("click", hideGlobalError);
 
-    // Initialize all modules
     router.init();
     accountSwitcher.init();
     settings.init();
@@ -1220,17 +1252,14 @@
     users.init();
     historyModule.init();
 
-    // Load accounts
     show("#settings-loading");
     await loadAccounts();
     hide("#settings-loading");
 
-    // Choose initial tab: Settings if no accounts, Domains otherwise
     var initialTab = state.accounts.length === 0 ? "settings" : "domains";
     router.navigate(initialTab);
   }
 
-  // Boot when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

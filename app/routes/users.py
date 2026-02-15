@@ -80,13 +80,28 @@ def list_users():
     if not account_id:
         return jsonify({"error": "account_id is required"}), 400
 
-    client = _get_pm_client(account_id)
-    all_users = client.list_users()
-
     if domain:
-        all_users = [u for u in all_users if u.endswith(f"@{domain}")]
+        secret = current_app.config["SECRET_KEY"]
+        db = get_db()
+        rows = db.execute(
+            """SELECT u.email, u.password, u.created_at
+               FROM users u
+               JOIN domains d ON u.domain_id = d.id
+               WHERE d.name = ? AND u.account_id = ?
+               ORDER BY u.created_at DESC""",
+            (domain, account_id),
+        ).fetchall()
+        return jsonify([
+            {
+                "email": row["email"],
+                "password": decrypt(row["password"], secret),
+                "created_at": row["created_at"],
+            }
+            for row in rows
+        ])
 
-    return jsonify(all_users)
+    client = _get_pm_client(account_id)
+    return jsonify(client.list_users())
 
 
 @bp.route("/mail-settings", methods=["GET"])
