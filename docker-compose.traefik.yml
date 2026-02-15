@@ -1,0 +1,18 @@
+# Example: docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
+# Adds Traefik reverse proxy labels for HTTPS. Adjust the Host rule to your domain.
+
+services:
+  mailamator:
+    ports: !reset []
+    networks:
+      - frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mailamator.rule=Host(`mailamator.example.com`)"
+      - "traefik.http.routers.mailamator.entrypoints=websecure"
+      - "traefik.http.routers.mailamator.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mailamator.loadbalancer.server.port=8080"
+
+networks:
+  frontend:
+    external: true
