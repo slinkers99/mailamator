@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="mailamator-logo.svg" alt="Mailamator logo" width="120">
+</p>
+
 # Mailamator
 
 A self-hosted web app for automating [Purelymail](https://purelymail.com/) domain and user setup.

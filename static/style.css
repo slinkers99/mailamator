@@ -148,10 +148,18 @@ header nav ul {
   margin: 0;
 }
 
+.app-logo {
+  height: 1.5rem;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 0.35rem;
+}
+
 .app-title {
   font-size: 1.05rem;
   white-space: nowrap;
   letter-spacing: -0.02em;
+  vertical-align: middle;
 }
 
 #account-switcher {
