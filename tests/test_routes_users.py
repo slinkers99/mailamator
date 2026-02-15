@@ -48,24 +48,47 @@ class TestListUsers:
     def test_list_users_for_domain(self, mock_get_client, client):
         account_id = _seed_account(client)
         mock_client = MagicMock()
+        mock_client.list_users.return_value = [
+            "alice@example.com", "bob@example.com", "other@different.com"
+        ]
         mock_get_client.return_value = mock_client
 
-        # Create users via the API (stored in local DB)
+        resp = client.get(f"/api/users?account_id={account_id}&domain=example.com")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert len(data) == 2  # filtered to example.com only
+        emails = [u["email"] for u in data]
+        assert "alice@example.com" in emails
+        assert "bob@example.com" in emails
+
+    @patch("app.routes.users._get_pm_client")
+    def test_list_users_enriched_with_local_data(self, mock_get_client, client):
+        account_id = _seed_account(client)
+        mock_client = MagicMock()
+        mock_get_client.return_value = mock_client
+
+        # Create a user via API (stored in local DB)
         client.post("/api/users", json={
             "account_id": account_id,
             "domain_name": "example.com",
-            "usernames": ["alice", "bob"],
+            "usernames": ["alice"],
         })
+
+        # Purelymail returns alice + bob, but only alice has local data
+        mock_client.list_users.return_value = [
+            "alice@example.com", "bob@example.com"
+        ]
 
         resp = client.get(f"/api/users?account_id={account_id}&domain=example.com")
         assert resp.status_code == 200
         data = resp.get_json()
         assert len(data) == 2
-        emails = [u["email"] for u in data]
-        assert "alice@example.com" in emails
-        assert "bob@example.com" in emails
-        assert "password" in data[0]
-        assert "created_at" in data[0]
+
+        alice = next(u for u in data if u["email"] == "alice@example.com")
+        bob = next(u for u in data if u["email"] == "bob@example.com")
+        assert "password" in alice
+        assert "created_at" in alice
+        assert "password" not in bob
 
 
 class TestMailSettings:

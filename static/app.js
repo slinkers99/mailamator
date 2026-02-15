@@ -1023,12 +1023,16 @@
 
           var tdEmail = document.createElement("td");
           var codeEmail = document.createElement("code");
-          codeEmail.textContent = u.email;
+          codeEmail.textContent = u.email || u;
           tdEmail.appendChild(codeEmail);
           tr.appendChild(tdEmail);
 
           var tdPassword = document.createElement("td");
-          tdPassword.appendChild(buildPasswordCell(u.password));
+          if (u.password) {
+            tdPassword.appendChild(buildPasswordCell(u.password));
+          } else {
+            tdPassword.textContent = "\u2014";
+          }
           tr.appendChild(tdPassword);
 
           var tdWebmail = document.createElement("td");
@@ -1037,7 +1041,7 @@
           tr.appendChild(tdWebmail);
 
           var tdDate = document.createElement("td");
-          tdDate.textContent = formatDate(u.created_at);
+          tdDate.textContent = u.created_at ? formatDate(u.created_at) : "\u2014";
           tr.appendChild(tdDate);
 
           tbody.appendChild(tr);
