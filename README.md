@@ -6,7 +6,7 @@
 
 A self-hosted web app for automating [Purelymail](https://purelymail.com/) domain and user setup.
 
-Mailamator eliminates the tedious manual process of setting up mail domains and users on Purelymail. Add a domain, get the exact DNS records you need, push them to Cloudflare with one click, register the domain, and bulk-create users with generated passwords — all from a single interface.
+Mailamator eliminates the manual process of setting up mail domains and users on Purelymail. Add a domain, get the exact DNS records you need, push them to Cloudflare with one click, register the domain, and bulk-create users with generated passwords — all from a single interface.
 
 ## Features
 
