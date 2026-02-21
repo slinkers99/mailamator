@@ -623,6 +623,7 @@
       var editActions = createEl("div", { className: "edit-actions" });
 
       var saveBtn = document.createElement("button");
+      saveBtn.className = "primary";
       saveBtn.textContent = "Save";
       saveBtn.addEventListener("click", async function () {
         var data = {};
@@ -1452,7 +1453,7 @@
 
       var saveBtn = createEl("button", {
         type: "button",
-        className: "btn-sm",
+        className: "btn-sm primary",
       }, "Save");
       saveBtn.addEventListener("click", async function () {
         var matchType = typeSelect.value;
