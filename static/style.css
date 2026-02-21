@@ -10,9 +10,12 @@
   --header-bg: rgba(245, 242, 237, 0.85);
   --header-border: rgba(210, 200, 185, 0.5);
   --tab-pill-bg: rgba(228, 222, 212, 0.6);
-  --tab-active-bg: var(--pico-primary);
+  --tab-active-bg: #6366f1;
   --tab-active-text: #ffffff;
   --tab-hover-bg: rgba(218, 210, 198, 0.6);
+  --accent: #6366f1;
+  --accent-deep: #4338ca;
+  --accent-shadow: rgba(99, 102, 241, 0.25);
   --card-shadow: 0 1px 3px rgba(120, 100, 70, 0.06), 0 4px 12px rgba(120, 100, 70, 0.04);
   --card-bg: rgba(255, 253, 249, 0.6);
   --card-border: rgba(210, 200, 185, 0.4);
@@ -38,7 +41,7 @@
   --edit-form-border: rgba(210, 200, 185, 0.4);
   --input-bg: rgba(255, 253, 249, 0.5);
   --input-border: rgba(195, 185, 170, 0.5);
-  --input-focus-ring: rgba(59, 130, 246, 0.12);
+  --input-focus-ring: rgba(99, 102, 241, 0.12);
   --btn-bg: rgba(228, 222, 212, 0.5);
   --btn-border: rgba(195, 185, 170, 0.5);
   --btn-hover-bg: rgba(218, 210, 198, 0.7);
@@ -77,7 +80,10 @@
   --edit-form-border: rgba(40, 55, 80, 0.4);
   --input-bg: rgba(12, 18, 30, 0.5);
   --input-border: rgba(40, 55, 80, 0.5);
-  --input-focus-ring: rgba(96, 165, 250, 0.12);
+  --input-focus-ring: rgba(129, 140, 248, 0.15);
+  --accent: #818cf8;
+  --accent-deep: #6366f1;
+  --accent-shadow: rgba(129, 140, 248, 0.25);
   --btn-bg: rgba(25, 35, 55, 0.5);
   --btn-border: rgba(40, 55, 80, 0.5);
   --btn-hover-bg: rgba(35, 50, 75, 0.6);
@@ -165,15 +171,15 @@ button:active:not(:disabled), [type="submit"]:active:not(:disabled) {
 [type="submit"],
 button.primary,
 button[type="submit"] {
-  background: linear-gradient(135deg, var(--tab-active-bg), hsl(230, 80%, 58%));
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
   color: var(--tab-active-text);
-  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 1px 3px var(--accent-shadow);
 }
 
 [type="submit"]:hover:not(:disabled),
 button.primary:hover:not(:disabled),
 button[type="submit"]:hover:not(:disabled) {
-  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px var(--accent-shadow);
 }
 
 /* Secondary / outline buttons */
@@ -362,9 +368,9 @@ header .tab-nav {
 
 .tab-btn[aria-selected="true"] {
   color: var(--tab-active-text);
-  background: linear-gradient(135deg, var(--tab-active-bg), hsl(230, 80%, 58%));
+  background: linear-gradient(135deg, var(--accent), var(--accent-deep));
   border-bottom-color: transparent;
-  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 1px 4px var(--accent-shadow), 0 0 0 1px rgba(99, 102, 241, 0.1);
 }
 
 .tab-btn:focus-visible {
@@ -514,12 +520,12 @@ header .tab-nav {
 
 .btn-edit {
   background: var(--btn-bg);
-  border: 1px solid var(--pico-primary);
-  color: var(--pico-primary);
+  border: 1px solid var(--accent);
+  color: var(--accent);
 }
 
 .btn-edit:hover {
-  background: var(--pico-primary);
+  background: var(--accent);
   color: var(--tab-active-text);
 }
 
