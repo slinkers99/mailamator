@@ -1358,6 +1358,15 @@
         tr.appendChild(tdTargets);
 
         var tdActions = document.createElement("td");
+        var editBtn = createEl("button", {
+          type: "button",
+          className: "btn-edit btn-sm",
+        }, "Edit");
+        editBtn.addEventListener("click", function () {
+          self.showEditRow(tr, r, tbody);
+        });
+        tdActions.appendChild(editBtn);
+
         var delBtn = createEl("button", {
           type: "button",
           className: "btn-delete btn-sm",
@@ -1385,6 +1394,126 @@
       table.appendChild(tbody);
       wrapper.appendChild(table);
       container.appendChild(wrapper);
+    },
+
+    showEditRow: function (displayRow, rule, tbody) {
+      var self = this;
+
+      // Remove any existing edit row
+      var existing = tbody.querySelector(".routing-edit-row");
+      if (existing) existing.remove();
+
+      var editRow = document.createElement("tr");
+      editRow.className = "routing-edit-row";
+
+      // Domain (read-only)
+      var tdDomain = document.createElement("td");
+      tdDomain.appendChild(createTextEl("code", rule.domainName));
+      editRow.appendChild(tdDomain);
+
+      // Match user input
+      var tdMatch = document.createElement("td");
+      var matchInput = createEl("input", {
+        type: "text",
+        value: rule.catchall ? "" : rule.matchUser,
+        placeholder: "user",
+      });
+      if (rule.catchall) matchInput.disabled = true;
+      tdMatch.appendChild(matchInput);
+      editRow.appendChild(tdMatch);
+
+      // Type selector
+      var tdType = document.createElement("td");
+      var typeSelect = document.createElement("select");
+      [["exact", "Exact"], ["prefix", "Prefix"], ["catchall", "Catch-all"]].forEach(function (opt) {
+        var o = createEl("option", { value: opt[0] }, opt[1]);
+        if (rule.catchall && opt[0] === "catchall") o.selected = true;
+        else if (rule.prefix && !rule.catchall && opt[0] === "prefix") o.selected = true;
+        else if (!rule.prefix && !rule.catchall && opt[0] === "exact") o.selected = true;
+        typeSelect.appendChild(o);
+      });
+      typeSelect.addEventListener("change", function () {
+        matchInput.disabled = typeSelect.value === "catchall";
+        if (typeSelect.value === "catchall") matchInput.value = "";
+      });
+      tdType.appendChild(typeSelect);
+      editRow.appendChild(tdType);
+
+      // Target addresses textarea
+      var tdTargets = document.createElement("td");
+      var targetsArea = document.createElement("textarea");
+      targetsArea.value = rule.targetAddresses.join("\n");
+      tdTargets.appendChild(targetsArea);
+      editRow.appendChild(tdTargets);
+
+      // Action buttons
+      var tdActions = document.createElement("td");
+      var actions = createEl("div", { className: "routing-edit-actions" });
+
+      var saveBtn = createEl("button", {
+        type: "button",
+        className: "btn-sm",
+      }, "Save");
+      saveBtn.addEventListener("click", async function () {
+        var matchType = typeSelect.value;
+        var matchUser = matchInput.value.trim();
+        var targets = targetsArea.value.trim().split("\n").map(function (t) { return t.trim(); }).filter(function (t) { return t.length > 0; });
+
+        if (targets.length === 0) {
+          showGlobalError("Enter at least one target address.");
+          return;
+        }
+        if (matchType !== "catchall" && !matchUser) {
+          showGlobalError("Enter a match user for exact/prefix rules.");
+          return;
+        }
+
+        saveBtn.setAttribute("aria-busy", "true");
+        saveBtn.disabled = true;
+        cancelBtn.disabled = true;
+
+        try {
+          // Create new rule first (safe: old rule still exists if this fails)
+          await api.createRoutingRule(
+            state.activeAccountId,
+            rule.domainName,
+            matchType === "catchall" ? "" : matchUser,
+            targets,
+            matchType === "prefix",
+            matchType === "catchall"
+          );
+          // New rule created successfully, now delete the old one
+          try {
+            await api.deleteRoutingRule(state.activeAccountId, rule.id);
+          } catch (delErr) {
+            // Old rule couldn't be deleted but new one exists — warn user
+            showGlobalError("Rule updated, but the old rule could not be removed: " + delErr.message);
+          }
+          showToast("Rule updated.");
+          self.loadRules();
+        } catch (err) {
+          showGlobalError(err.message);
+          saveBtn.removeAttribute("aria-busy");
+          saveBtn.disabled = false;
+          cancelBtn.disabled = false;
+        }
+      });
+      actions.appendChild(saveBtn);
+
+      var cancelBtn = createEl("button", {
+        type: "button",
+        className: "secondary btn-sm",
+      }, "Cancel");
+      cancelBtn.addEventListener("click", function () {
+        editRow.remove();
+      });
+      actions.appendChild(cancelBtn);
+
+      tdActions.appendChild(actions);
+      editRow.appendChild(tdActions);
+
+      // Insert edit row right after the display row
+      displayRow.insertAdjacentElement("afterend", editRow);
     },
   };
 
