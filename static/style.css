@@ -184,6 +184,13 @@ header nav ul {
   padding: 0.3rem 0.5rem;
   border-radius: 5px;
   transition: color 0.15s ease, background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+#feedback-link svg {
+  flex-shrink: 0;
 }
 
 #feedback-link:hover {
